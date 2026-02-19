@@ -36,6 +36,6 @@ public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TReques
             }
         }
 
-        return await next(cancellationToken);
+        return await next();
     }
 }
