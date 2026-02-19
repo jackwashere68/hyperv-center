@@ -1,0 +1,91 @@
+<app-page-header title="Hosts">
+  <button mat-flat-button color="primary" (click)="openCreateDialog()">
+    <mat-icon>add</mat-icon>
+    Add Host
+  </button>
+</app-page-header>
+
+@if (store.isLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (!store.isLoading() && store.hostEntities().length === 0) {
+  <div
+    class="flex flex-col items-center justify-center py-16 text-gray-500"
+  >
+    <mat-icon class="!text-6xl !h-16 !w-16 mb-4">dns</mat-icon>
+    <p class="text-lg">No hosts found</p>
+    <p class="text-sm">Add your first Hyper-V host to get started.</p>
+  </div>
+}
+
+@if (store.hostEntities().length > 0) {
+  <table mat-table [dataSource]="store.hostEntities()" class="w-full">
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let host">{{ host.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="hostname">
+      <th mat-header-cell *matHeaderCellDef>Hostname</th>
+      <td mat-cell *matCellDef="let host">{{ host.hostname }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="credentialName">
+      <th mat-header-cell *matHeaderCellDef>Credential</th>
+      <td mat-cell *matCellDef="let host">{{ host.credentialName }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="clusterName">
+      <th mat-header-cell *matHeaderCellDef>Cluster</th>
+      <td mat-cell *matCellDef="let host">{{ host.clusterName ?? '—' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let host">
+        <span
+          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+          [class]="statusColor(host.status)"
+        >
+          {{ host.status | hostStatus }}
+        </span>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="createdAt">
+      <th mat-header-cell *matHeaderCellDef>Created</th>
+      <td mat-cell *matCellDef="let host">
+        {{ host.createdAt | date: 'medium' }}
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let host">
+        <button
+          mat-icon-button
+          (click)="openProperties(host)"
+        >
+          <mat-icon>info</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          (click)="editHost(host)"
+        >
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button
+          mat-icon-button
+          color="warn"
+          (click)="deleteHost(host.id, host.name)"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+}

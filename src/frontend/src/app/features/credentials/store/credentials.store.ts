@@ -12,11 +12,13 @@ import {
   addEntity,
   removeEntity,
   setAllEntities,
+  updateEntity,
   withEntities,
 } from '@ngrx/signals/entities';
 import {
   Credential,
   CreateCredentialRequest,
+  UpdateCredentialRequest,
 } from '@core/models/credential.model';
 import { CredentialsService } from '../services/credentials.service';
 import { firstValueFrom } from 'rxjs';
@@ -64,6 +66,26 @@ export const CredentialsStore = signalStore(
             error: 'Failed to create credential.',
           });
           throw new Error('Failed to create credential.');
+        }
+      },
+      async update(id: string, request: UpdateCredentialRequest) {
+        try {
+          const credential = await firstValueFrom(
+            credentialsService.update(id, request),
+          );
+          patchState(
+            store,
+            updateEntity(
+              { id, changes: credential },
+              { collection: 'credential' },
+            ),
+          );
+          return credential;
+        } catch {
+          patchState(store, {
+            error: 'Failed to update credential.',
+          });
+          throw new Error('Failed to update credential.');
         }
       },
       async remove(id: string) {

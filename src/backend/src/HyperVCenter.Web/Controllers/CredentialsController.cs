@@ -45,6 +45,22 @@ public class CredentialsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(CredentialDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Update(
+        Guid id,
+        [FromBody] UpdateCredentialCommand command,
+        CancellationToken cancellationToken)
+    {
+        if (id != command.Id)
+            return BadRequest();
+
+        var result = await _sender.Send(command, cancellationToken);
+        return result is not null ? Ok(result) : NotFound();
+    }
+
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -1,0 +1,96 @@
+@if (loading()) {
+  <mat-progress-bar mode="indeterminate" />
+}
+
+@if (cluster(); as c) {
+  <div class="mb-6 flex items-center gap-4">
+    <button mat-icon-button (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h1 class="text-2xl font-medium">{{ c.name }}</h1>
+    <span
+      class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+      [class]="clusterStatusColor(c.status)"
+    >
+      {{ c.status | clusterStatus }}
+    </span>
+  </div>
+
+  <mat-card class="mb-6">
+    <mat-card-content class="grid grid-cols-2 gap-4 pt-4">
+      <div>
+        <div class="text-sm text-gray-500">Credential</div>
+        <div>{{ c.credentialName }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Nodes</div>
+        <div>{{ c.nodes.length }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Created</div>
+        <div>{{ c.createdAt | date: 'medium' }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Updated</div>
+        <div>{{ c.updatedAt ? (c.updatedAt | date: 'medium') : '—' }}</div>
+      </div>
+      @if (c.notes) {
+        <div class="col-span-2">
+          <div class="text-sm text-gray-500">Notes</div>
+          <div>{{ c.notes }}</div>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+
+  <h2 class="text-xl font-medium mb-4">Nodes</h2>
+
+  @if (c.nodes.length === 0) {
+    <div
+      class="flex flex-col items-center justify-center py-8 text-gray-500"
+    >
+      <p class="text-sm">No nodes in this cluster.</p>
+    </div>
+  }
+
+  @if (c.nodes.length > 0) {
+    <table mat-table [dataSource]="c.nodes" class="w-full">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let node">{{ node.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="hostname">
+        <th mat-header-cell *matHeaderCellDef>Hostname</th>
+        <td mat-cell *matCellDef="let node">{{ node.hostname }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="credentialName">
+        <th mat-header-cell *matHeaderCellDef>Credential</th>
+        <td mat-cell *matCellDef="let node">{{ node.credentialName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let node">
+          <span
+            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+            [class]="hostStatusColor(node.status)"
+          >
+            {{ node.status | hostStatus }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="createdAt">
+        <th mat-header-cell *matHeaderCellDef>Created</th>
+        <td mat-cell *matCellDef="let node">
+          {{ node.createdAt | date: 'medium' }}
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="nodeColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: nodeColumns"></tr>
+    </table>
+  }
+}

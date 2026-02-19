@@ -11,3 +11,10 @@ export interface CreateCredentialRequest {
   username: string;
   password: string;
 }
+
+export interface UpdateCredentialRequest {
+  id: string;
+  name: string;
+  username: string;
+  password: string | null;
+}

@@ -14,6 +14,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
 
     public DbSet<VirtualMachine> VirtualMachines => Set<VirtualMachine>();
     public DbSet<Credential> Credentials => Set<Credential>();
+    public DbSet<HyperVHost> HyperVHosts => Set<HyperVHost>();
+    public DbSet<Cluster> Clusters => Set<Cluster>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

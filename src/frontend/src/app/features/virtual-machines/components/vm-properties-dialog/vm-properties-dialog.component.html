@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Virtual Machine Properties</h2>
+
+<mat-dialog-content>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <div class="text-sm text-gray-500">Name</div>
+      <div>{{ data.name }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Host</div>
+      <div>{{ data.host }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">State</div>
+      <div>{{ data.state | vmState }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">CPUs</div>
+      <div>{{ data.cpuCount }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Memory</div>
+      <div>{{ data.memoryBytes | bytes }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Notes</div>
+      <div>{{ data.notes ?? '—' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Created</div>
+      <div>{{ data.createdAt | date: 'medium' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Updated</div>
+      <div>{{ data.updatedAt ? (data.updatedAt | date: 'medium') : '—' }}</div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

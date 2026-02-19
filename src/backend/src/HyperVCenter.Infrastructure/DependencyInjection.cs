@@ -23,6 +23,7 @@ public static class DependencyInjection
 
         services.AddDataProtection();
         services.AddScoped<IEncryptionService, EncryptionService>();
+        services.AddScoped<IClusterDetectionService, StubClusterDetectionService>();
 
         return services;
     }

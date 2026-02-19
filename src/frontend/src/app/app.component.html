@@ -6,11 +6,19 @@
     <mat-nav-list>
       <a
         mat-list-item
-        routerLink="/credentials"
+        routerLink="/clusters"
         routerLinkActive="mdc-list-item--activated"
       >
-        <mat-icon matListItemIcon>lock</mat-icon>
-        <span matListItemTitle>Credentials</span>
+        <mat-icon matListItemIcon>hub</mat-icon>
+        <span matListItemTitle>Clusters</span>
+      </a>
+      <a
+        mat-list-item
+        routerLink="/hosts"
+        routerLinkActive="mdc-list-item--activated"
+      >
+        <mat-icon matListItemIcon>dns</mat-icon>
+        <span matListItemTitle>Hosts</span>
       </a>
       <a
         mat-list-item
@@ -19,6 +27,18 @@
       >
         <mat-icon matListItemIcon>computer</mat-icon>
         <span matListItemTitle>Virtual Machines</span>
+      </a>
+      <div class="px-4 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        Settings
+      </div>
+      <a
+        mat-list-item
+        routerLink="/credentials"
+        routerLinkActive="mdc-list-item--activated"
+        class="!pl-8"
+      >
+        <mat-icon matListItemIcon>lock</mat-icon>
+        <span matListItemTitle>Credentials</span>
       </a>
     </mat-nav-list>
   </mat-sidenav>

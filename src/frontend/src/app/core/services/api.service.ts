@@ -15,6 +15,10 @@ export class ApiService {
     return this.http.post<T>(`${this.baseUrl}${path}`, body);
   }
 
+  put<T>(path: string, body: unknown) {
+    return this.http.put<T>(`${this.baseUrl}${path}`, body);
+  }
+
   delete<T>(path: string) {
     return this.http.delete<T>(`${this.baseUrl}${path}`);
   }

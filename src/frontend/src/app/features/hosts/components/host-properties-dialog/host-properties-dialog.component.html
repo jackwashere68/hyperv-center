@@ -1,0 +1,42 @@
+<h2 mat-dialog-title>Host Properties</h2>
+
+<mat-dialog-content>
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <div class="text-sm text-gray-500">Name</div>
+      <div>{{ data.name }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Hostname</div>
+      <div>{{ data.hostname }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Credential</div>
+      <div>{{ data.credentialName }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Status</div>
+      <div>{{ data.status | hostStatus }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Cluster</div>
+      <div>{{ data.clusterName ?? '—' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Notes</div>
+      <div>{{ data.notes ?? '—' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Created</div>
+      <div>{{ data.createdAt | date: 'medium' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Updated</div>
+      <div>{{ data.updatedAt ? (data.updatedAt | date: 'medium') : '—' }}</div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Close</button>
+</mat-dialog-actions>

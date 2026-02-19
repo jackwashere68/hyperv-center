@@ -5,11 +5,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { VirtualMachinesStore } from '../../store/virtual-machines.store';
-import { VmState } from '@core/models/virtual-machine.model';
+import { VirtualMachine, VmState } from '@core/models/virtual-machine.model';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
 import { BytesPipe } from '@shared/pipes/bytes.pipe';
 import { VmStatePipe } from '@shared/pipes/vm-state.pipe';
 import { VmCreateDialogComponent } from '../vm-create-dialog/vm-create-dialog.component';
+import { VmPropertiesDialogComponent } from '../vm-properties-dialog/vm-properties-dialog.component';
 
 @Component({
   selector: 'app-vm-list',
@@ -34,6 +35,7 @@ export class VmListComponent {
     'state',
     'cpuCount',
     'memoryBytes',
+    'actions',
   ];
 
   readonly stateColors: Record<VmState, string> = {
@@ -49,5 +51,12 @@ export class VmListComponent {
 
   openCreateDialog(): void {
     this.dialog.open(VmCreateDialogComponent, { width: '480px' });
+  }
+
+  openProperties(vm: VirtualMachine): void {
+    this.dialog.open(VmPropertiesDialogComponent, {
+      width: '480px',
+      data: vm,
+    });
   }
 }

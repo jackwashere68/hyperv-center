@@ -22,6 +22,42 @@ namespace HyperVCenter.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("HyperVCenter.Domain.Entities.Cluster", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CredentialId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CredentialId");
+
+                    b.ToTable("clusters", (string)null);
+                });
+
             modelBuilder.Entity("HyperVCenter.Domain.Entities.Credential", b =>
                 {
                     b.Property<Guid>("Id")
@@ -52,6 +88,52 @@ namespace HyperVCenter.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("credentials", (string)null);
+                });
+
+            modelBuilder.Entity("HyperVCenter.Domain.Entities.HyperVHost", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ClusterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CredentialId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Hostname")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClusterId");
+
+                    b.HasIndex("CredentialId");
+
+                    b.ToTable("hyperv_hosts", (string)null);
                 });
 
             modelBuilder.Entity("HyperVCenter.Domain.Entities.VirtualMachine", b =>
@@ -94,6 +176,40 @@ namespace HyperVCenter.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("virtual_machines", (string)null);
+                });
+
+            modelBuilder.Entity("HyperVCenter.Domain.Entities.Cluster", b =>
+                {
+                    b.HasOne("HyperVCenter.Domain.Entities.Credential", "Credential")
+                        .WithMany()
+                        .HasForeignKey("CredentialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Credential");
+                });
+
+            modelBuilder.Entity("HyperVCenter.Domain.Entities.HyperVHost", b =>
+                {
+                    b.HasOne("HyperVCenter.Domain.Entities.Cluster", "Cluster")
+                        .WithMany("Nodes")
+                        .HasForeignKey("ClusterId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("HyperVCenter.Domain.Entities.Credential", "Credential")
+                        .WithMany()
+                        .HasForeignKey("CredentialId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cluster");
+
+                    b.Navigation("Credential");
+                });
+
+            modelBuilder.Entity("HyperVCenter.Domain.Entities.Cluster", b =>
+                {
+                    b.Navigation("Nodes");
                 });
 #pragma warning restore 612, 618
         }

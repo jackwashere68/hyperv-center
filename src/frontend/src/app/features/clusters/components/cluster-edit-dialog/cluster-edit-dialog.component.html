@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>Edit Cluster</h2>
+
+<mat-dialog-content>
+  <form
+    [formGroup]="form"
+    id="cluster-edit-form"
+    class="flex flex-col gap-4 pt-2"
+  >
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input
+        matInput
+        formControlName="name"
+        placeholder="YOURCLUSTER"
+      />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Name is required.</mat-error>
+      } @else if (form.controls.name.hasError('maxlength')) {
+        <mat-error>Name must not exceed 256 characters.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Credential</mat-label>
+      <mat-select formControlName="credentialId">
+        @for (cred of credentialsStore.credentialEntities(); track cred.id) {
+          <mat-option [value]="cred.id">{{ cred.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.credentialId.hasError('required')) {
+        <mat-error>Credential is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Notes</mat-label>
+      <textarea matInput formControlName="notes" rows="3"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button
+    mat-flat-button
+    color="primary"
+    type="submit"
+    form="cluster-edit-form"
+    [disabled]="form.invalid"
+    (click)="onSubmit()"
+  >
+    Save
+  </button>
+</mat-dialog-actions>

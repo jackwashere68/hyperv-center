@@ -1,0 +1,24 @@
+<h2 mat-dialog-title>Cluster Detected</h2>
+
+<mat-dialog-content>
+  <p class="mb-4">
+    This host is part of cluster <strong>{{ data.clusterName }}</strong>
+    with {{ data.nodeHostnames.length }} node(s):
+  </p>
+  <mat-list>
+    @for (hostname of data.nodeHostnames; track hostname) {
+      <mat-list-item>
+        <mat-icon matListItemIcon>dns</mat-icon>
+        <span matListItemTitle>{{ hostname }}</span>
+      </mat-list-item>
+    }
+  </mat-list>
+  <p class="mt-4">Would you like to add the entire cluster instead?</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="addHostOnly()">Add Host Only</button>
+  <button mat-flat-button color="primary" (click)="addCluster()">
+    Add Cluster
+  </button>
+</mat-dialog-actions>

@@ -1,5 +1,6 @@
 using HyperVCenter.Application;
 using HyperVCenter.Infrastructure;
+using HyperVCenter.Web.Middleware;
 using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,10 @@ builder.Host.UseSerilog((context, configuration) =>
 // Layer DI
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// Error handling
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // API
 builder.Services.AddControllers();
@@ -27,6 +32,8 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 // Middleware pipeline
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
