@@ -1,0 +1,80 @@
+<h2 mat-dialog-title>Create Virtual Machine</h2>
+
+<mat-dialog-content>
+  <form
+    [formGroup]="form"
+    id="vm-create-form"
+    class="flex flex-col gap-4 pt-2"
+  >
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input
+        matInput
+        formControlName="name"
+        placeholder="My Virtual Machine"
+      />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Name is required.</mat-error>
+      } @else if (form.controls.name.hasError('maxlength')) {
+        <mat-error>Name must not exceed 256 characters.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Host</mat-label>
+      <input
+        matInput
+        formControlName="host"
+        placeholder="hyperv-host-01"
+      />
+      @if (form.controls.host.hasError('required')) {
+        <mat-error>Host is required.</mat-error>
+      } @else if (form.controls.host.hasError('maxlength')) {
+        <mat-error>Host must not exceed 256 characters.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>CPU Count</mat-label>
+      <input
+        matInput
+        type="number"
+        formControlName="cpuCount"
+        min="1"
+      />
+      @if (form.controls.cpuCount.hasError('required')) {
+        <mat-error>CPU count is required.</mat-error>
+      } @else if (form.controls.cpuCount.hasError('min')) {
+        <mat-error>CPU count must be at least 1.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Memory</mat-label>
+      <mat-select formControlName="memoryBytes">
+        @for (option of memoryOptions; track option.value) {
+          <mat-option [value]="option.value">{{ option.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Notes</mat-label>
+      <textarea matInput formControlName="notes" rows="3"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button
+    mat-flat-button
+    color="primary"
+    type="submit"
+    form="vm-create-form"
+    [disabled]="form.invalid"
+    (click)="onSubmit()"
+  >
+    Create
+  </button>
+</mat-dialog-actions>
