@@ -89,3 +89,6 @@ docker/postgres/data/
 # Test results
 TestResults/
 coverage/
+
+# Data protection keys
+keys/

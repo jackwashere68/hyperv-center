@@ -1,6 +1,7 @@
 using HyperVCenter.Application.Common.Interfaces;
 using HyperVCenter.Infrastructure.Persistence;
 using HyperVCenter.Infrastructure.Services;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,11 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
 
-        services.AddDataProtection();
+        var keysPath = configuration["DataProtection:KeysPath"];
+        var dpBuilder = services.AddDataProtection()
+            .SetApplicationName("HyperVCenter");
+        if (!string.IsNullOrEmpty(keysPath))
+            dpBuilder.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<IClusterDetectionService, StubClusterDetectionService>();
 
