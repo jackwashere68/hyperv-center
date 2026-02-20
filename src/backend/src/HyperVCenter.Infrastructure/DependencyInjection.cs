@@ -23,8 +23,7 @@ public static class DependencyInjection
             provider.GetRequiredService<ApplicationDbContext>());
 
         var keysPath = configuration["DataProtection:KeysPath"];
-        var dpBuilder = services.AddDataProtection()
-            .SetApplicationName("HyperVCenter");
+        var dpBuilder = services.AddDataProtection();
         if (!string.IsNullOrEmpty(keysPath))
             dpBuilder.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
         services.AddScoped<IEncryptionService, EncryptionService>();
