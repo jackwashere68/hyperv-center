@@ -1,5 +1,6 @@
 using System.Management.Automation;
 using System.Management.Automation.Runspaces;
+using System.Text.Json;
 using HyperVCenter.Application.Common.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -78,26 +79,25 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
     {
         var results = await RunRemoteAsync(hostname, username, password, $@"
             $vm = Get-VM -Id '{vmId}'
-
             $vmName = $vm.Name
 
             $disks = @(Get-VMHardDiskDrive -VMName $vmName | ForEach-Object {{
                 $vhd = $null
                 try {{ $vhd = Get-VHD -Path $_.Path -ErrorAction SilentlyContinue }} catch {{}}
-                [PSCustomObject]@{{
+                @{{
                     ControllerType = $_.ControllerType.ToString()
                     ControllerNumber = $_.ControllerNumber
                     ControllerLocation = $_.ControllerLocation
                     Path = $_.Path
                     VhdFormat = $(if ($vhd) {{ $vhd.VhdFormat.ToString() }} else {{ 'Unknown' }})
                     VhdType = $(if ($vhd) {{ $vhd.VhdType.ToString() }} else {{ 'Unknown' }})
-                    CurrentSize = $(if ($vhd) {{ [long]$vhd.FileSize }} else {{ [long]0 }})
-                    MaxSize = $(if ($vhd) {{ [long]$vhd.Size }} else {{ [long]0 }})
+                    CurrentSize = $(if ($vhd) {{ $vhd.FileSize }} else {{ 0 }})
+                    MaxSize = $(if ($vhd) {{ $vhd.Size }} else {{ 0 }})
                 }}
             }})
 
             $nics = @(Get-VMNetworkAdapter -VMName $vmName | ForEach-Object {{
-                [PSCustomObject]@{{
+                @{{
                     Name = $_.Name
                     SwitchName = $(if ($_.SwitchName) {{ $_.SwitchName }} else {{ '' }})
                     MacAddress = $_.MacAddress
@@ -106,15 +106,15 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
             }})
 
             $snapshots = @(Get-VMSnapshot -VMName $vmName -ErrorAction SilentlyContinue | ForEach-Object {{
-                [PSCustomObject]@{{
-                    Id = $_.Id
+                @{{
+                    Id = $_.Id.ToString()
                     Name = $_.Name
                     CreationTime = $_.CreationTime.ToString('o')
                     ParentSnapshotName = $_.ParentSnapshotName
                 }}
             }})
 
-            [PSCustomObject]@{{
+            @{{
                 Generation = $vm.Generation
                 Version = $vm.Version
                 Path = $vm.Path
@@ -133,80 +133,91 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
                 Disks = $disks
                 NetworkAdapters = $nics
                 Snapshots = $snapshots
-            }}
+            }} | ConvertTo-Json -Depth 5 -Compress
         ", ct);
 
-        var obj = results.First();
+        var json = results.First().BaseObject.ToString()!;
+        var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var data = JsonSerializer.Deserialize<HardwareJsonModel>(json, opts)!;
+
         return new VmHardwareInfo(
-            Convert.ToInt32(obj.Properties["Generation"].Value),
-            obj.Properties["Version"].Value?.ToString() ?? "",
-            obj.Properties["Path"].Value?.ToString() ?? "",
-            TimeSpan.FromSeconds(Convert.ToDouble(obj.Properties["Uptime"].Value)),
-            Convert.ToBoolean(obj.Properties["DynamicMemoryEnabled"].Value),
-            Convert.ToInt64(obj.Properties["MemoryStartup"].Value),
-            Convert.ToInt64(obj.Properties["MemoryMinimum"].Value),
-            Convert.ToInt64(obj.Properties["MemoryMaximum"].Value),
-            Convert.ToInt64(obj.Properties["MemoryAssigned"].Value),
-            Convert.ToInt64(obj.Properties["MemoryDemand"].Value),
-            Convert.ToInt32(obj.Properties["ProcessorCount"].Value),
-            obj.Properties["Notes"].Value?.ToString(),
-            obj.Properties["AutomaticStartAction"].Value?.ToString() ?? "",
-            obj.Properties["AutomaticStopAction"].Value?.ToString() ?? "",
-            obj.Properties["CheckpointType"].Value?.ToString() ?? "",
-            ParseDisks(obj.Properties["Disks"].Value),
-            ParseNetworkAdapters(obj.Properties["NetworkAdapters"].Value),
-            ParseSnapshots(obj.Properties["Snapshots"].Value));
+            data.Generation,
+            data.Version ?? "",
+            data.Path ?? "",
+            TimeSpan.FromSeconds(data.Uptime),
+            data.DynamicMemoryEnabled,
+            data.MemoryStartup,
+            data.MemoryMinimum,
+            data.MemoryMaximum,
+            data.MemoryAssigned,
+            data.MemoryDemand,
+            data.ProcessorCount,
+            data.Notes,
+            data.AutomaticStartAction ?? "",
+            data.AutomaticStopAction ?? "",
+            data.CheckpointType ?? "",
+            (data.Disks ?? []).Select(d => new VmDiskInfo(
+                d.ControllerType ?? "", d.ControllerNumber, d.ControllerLocation,
+                d.Path ?? "", d.VhdFormat ?? "Unknown", d.VhdType ?? "Unknown",
+                d.CurrentSize, d.MaxSize)).ToList(),
+            (data.NetworkAdapters ?? []).Select(n => new VmNetworkAdapterInfo(
+                n.Name ?? "", n.SwitchName ?? "", n.MacAddress ?? "",
+                n.IpAddresses ?? [])).ToList(),
+            (data.Snapshots ?? []).Select(s => new VmSnapshotInfo(
+                Guid.TryParse(s.Id, out var id) ? id : Guid.Empty,
+                s.Name ?? "",
+                DateTime.TryParse(s.CreationTime, out var dt) ? dt : DateTime.MinValue,
+                s.ParentSnapshotName)).ToList());
     }
 
-    private static IReadOnlyList<VmDiskInfo> ParseDisks(object? value)
+    private record HardwareJsonModel
     {
-        if (value is not System.Collections.IEnumerable items)
-            return Array.Empty<VmDiskInfo>();
-
-        return items.Cast<PSObject>().Select(d => new VmDiskInfo(
-            d.Properties["ControllerType"].Value?.ToString() ?? "",
-            Convert.ToInt32(d.Properties["ControllerNumber"].Value),
-            Convert.ToInt32(d.Properties["ControllerLocation"].Value),
-            d.Properties["Path"].Value?.ToString() ?? "",
-            d.Properties["VhdFormat"].Value?.ToString() ?? "Unknown",
-            d.Properties["VhdType"].Value?.ToString() ?? "Unknown",
-            Convert.ToInt64(d.Properties["CurrentSize"].Value),
-            Convert.ToInt64(d.Properties["MaxSize"].Value)
-        )).ToList();
+        public int Generation { get; init; }
+        public string? Version { get; init; }
+        public string? Path { get; init; }
+        public double Uptime { get; init; }
+        public bool DynamicMemoryEnabled { get; init; }
+        public long MemoryStartup { get; init; }
+        public long MemoryMinimum { get; init; }
+        public long MemoryMaximum { get; init; }
+        public long MemoryAssigned { get; init; }
+        public long MemoryDemand { get; init; }
+        public int ProcessorCount { get; init; }
+        public string? Notes { get; init; }
+        public string? AutomaticStartAction { get; init; }
+        public string? AutomaticStopAction { get; init; }
+        public string? CheckpointType { get; init; }
+        public List<DiskJsonModel>? Disks { get; init; }
+        public List<NicJsonModel>? NetworkAdapters { get; init; }
+        public List<SnapshotJsonModel>? Snapshots { get; init; }
     }
 
-    private static IReadOnlyList<VmNetworkAdapterInfo> ParseNetworkAdapters(object? value)
+    private record DiskJsonModel
     {
-        if (value is not System.Collections.IEnumerable items)
-            return Array.Empty<VmNetworkAdapterInfo>();
-
-        return items.Cast<PSObject>().Select(n => new VmNetworkAdapterInfo(
-            n.Properties["Name"].Value?.ToString() ?? "",
-            n.Properties["SwitchName"].Value?.ToString() ?? "",
-            n.Properties["MacAddress"].Value?.ToString() ?? "",
-            ParseStringArray(n.Properties["IpAddresses"].Value)
-        )).ToList();
+        public string? ControllerType { get; init; }
+        public int ControllerNumber { get; init; }
+        public int ControllerLocation { get; init; }
+        public string? Path { get; init; }
+        public string? VhdFormat { get; init; }
+        public string? VhdType { get; init; }
+        public long CurrentSize { get; init; }
+        public long MaxSize { get; init; }
     }
 
-    private static IReadOnlyList<VmSnapshotInfo> ParseSnapshots(object? value)
+    private record NicJsonModel
     {
-        if (value is not System.Collections.IEnumerable items)
-            return Array.Empty<VmSnapshotInfo>();
-
-        return items.Cast<PSObject>().Select(s => new VmSnapshotInfo(
-            Guid.Parse(s.Properties["Id"].Value?.ToString() ?? Guid.Empty.ToString()),
-            s.Properties["Name"].Value?.ToString() ?? "",
-            DateTime.Parse(s.Properties["CreationTime"].Value?.ToString() ?? DateTime.MinValue.ToString("o")),
-            s.Properties["ParentSnapshotName"].Value?.ToString()
-        )).ToList();
+        public string? Name { get; init; }
+        public string? SwitchName { get; init; }
+        public string? MacAddress { get; init; }
+        public List<string>? IpAddresses { get; init; }
     }
 
-    private static IReadOnlyList<string> ParseStringArray(object? value)
+    private record SnapshotJsonModel
     {
-        if (value is not System.Collections.IEnumerable items)
-            return Array.Empty<string>();
-
-        return items.Cast<object>().Select(o => o.ToString() ?? "").ToList();
+        public string? Id { get; init; }
+        public string? Name { get; init; }
+        public string? CreationTime { get; init; }
+        public string? ParentSnapshotName { get; init; }
     }
 
     private async Task<IReadOnlyList<PSObject>> RunRemoteAsync(
