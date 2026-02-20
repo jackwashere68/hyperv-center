@@ -48,20 +48,20 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
     }
 
     public async Task StartVmAsync(string hostname, string username, string password, Guid vmId, CancellationToken ct) =>
-        await RunRemoteAsync(hostname, username, password, $"Start-VM -Id '{vmId}'", ct);
+        await RunRemoteAsync(hostname, username, password, $"Start-VM -VMId '{vmId}'", ct);
 
     public async Task StopVmAsync(string hostname, string username, string password, Guid vmId, bool force, CancellationToken ct) =>
         await RunRemoteAsync(hostname, username, password,
-            force ? $"Stop-VM -Id '{vmId}' -Force" : $"Stop-VM -Id '{vmId}'", ct);
+            force ? $"Stop-VM -VMId '{vmId}' -Force" : $"Stop-VM -VMId '{vmId}'", ct);
 
     public async Task PauseVmAsync(string hostname, string username, string password, Guid vmId, CancellationToken ct) =>
-        await RunRemoteAsync(hostname, username, password, $"Suspend-VM -Id '{vmId}'", ct);
+        await RunRemoteAsync(hostname, username, password, $"Suspend-VM -VMId '{vmId}'", ct);
 
     public async Task SaveVmAsync(string hostname, string username, string password, Guid vmId, CancellationToken ct) =>
-        await RunRemoteAsync(hostname, username, password, $"Save-VM -Id '{vmId}'", ct);
+        await RunRemoteAsync(hostname, username, password, $"Save-VM -VMId '{vmId}'", ct);
 
     public async Task RestartVmAsync(string hostname, string username, string password, Guid vmId, CancellationToken ct) =>
-        await RunRemoteAsync(hostname, username, password, $"Restart-VM -Id '{vmId}' -Force", ct);
+        await RunRemoteAsync(hostname, username, password, $"Restart-VM -VMId '{vmId}' -Force", ct);
 
     public async Task<Guid> CreateVmAsync(string hostname, string username, string password, string name, int cpuCount, long memoryBytes, CancellationToken ct)
     {
