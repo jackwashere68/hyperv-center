@@ -74,6 +74,139 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
         return Guid.Parse(results.First().BaseObject.ToString()!);
     }
 
+    public async Task<VmHardwareInfo> GetVmHardwareAsync(string hostname, string username, string password, Guid vmId, CancellationToken ct)
+    {
+        var results = await RunRemoteAsync(hostname, username, password, $@"
+            $vm = Get-VM -Id '{vmId}'
+
+            $disks = @(Get-VMHardDiskDrive -VMId '{vmId}' | ForEach-Object {{
+                $vhd = $null
+                try {{ $vhd = Get-VHD -Path $_.Path -ErrorAction SilentlyContinue }} catch {{}}
+                [PSCustomObject]@{{
+                    ControllerType = $_.ControllerType.ToString()
+                    ControllerNumber = $_.ControllerNumber
+                    ControllerLocation = $_.ControllerLocation
+                    Path = $_.Path
+                    VhdFormat = if ($vhd) {{ $vhd.VhdFormat.ToString() }} else {{ 'Unknown' }}
+                    VhdType = if ($vhd) {{ $vhd.VhdType.ToString() }} else {{ 'Unknown' }}
+                    CurrentSize = if ($vhd) {{ $vhd.FileSize }} else {{ 0 }}
+                    MaxSize = if ($vhd) {{ $vhd.Size }} else {{ 0 }}
+                }}
+            }})
+
+            $nics = @(Get-VMNetworkAdapter -VMId '{vmId}' | ForEach-Object {{
+                [PSCustomObject]@{{
+                    Name = $_.Name
+                    SwitchName = $_.SwitchName
+                    MacAddress = $_.MacAddress
+                    IpAddresses = @($_.IPAddresses)
+                }}
+            }})
+
+            $snapshots = @(Get-VMSnapshot -VMId '{vmId}' -ErrorAction SilentlyContinue | ForEach-Object {{
+                [PSCustomObject]@{{
+                    Id = $_.Id
+                    Name = $_.Name
+                    CreationTime = $_.CreationTime.ToString('o')
+                    ParentSnapshotName = $_.ParentSnapshotName
+                }}
+            }})
+
+            [PSCustomObject]@{{
+                Generation = $vm.Generation
+                Version = $vm.Version
+                Path = $vm.Path
+                Uptime = $vm.Uptime.TotalSeconds
+                DynamicMemoryEnabled = $vm.DynamicMemoryEnabled
+                MemoryStartup = $vm.MemoryStartup
+                MemoryMinimum = $vm.MemoryMinimum
+                MemoryMaximum = $vm.MemoryMaximum
+                MemoryAssigned = $vm.MemoryAssigned
+                MemoryDemand = $vm.MemoryDemand
+                ProcessorCount = $vm.ProcessorCount
+                Notes = $vm.Notes
+                AutomaticStartAction = $vm.AutomaticStartAction.ToString()
+                AutomaticStopAction = $vm.AutomaticStopAction.ToString()
+                CheckpointType = $vm.CheckpointType.ToString()
+                Disks = $disks
+                NetworkAdapters = $nics
+                Snapshots = $snapshots
+            }}
+        ", ct);
+
+        var obj = results.First();
+        return new VmHardwareInfo(
+            Convert.ToInt32(obj.Properties["Generation"].Value),
+            obj.Properties["Version"].Value?.ToString() ?? "",
+            obj.Properties["Path"].Value?.ToString() ?? "",
+            TimeSpan.FromSeconds(Convert.ToDouble(obj.Properties["Uptime"].Value)),
+            Convert.ToBoolean(obj.Properties["DynamicMemoryEnabled"].Value),
+            Convert.ToInt64(obj.Properties["MemoryStartup"].Value),
+            Convert.ToInt64(obj.Properties["MemoryMinimum"].Value),
+            Convert.ToInt64(obj.Properties["MemoryMaximum"].Value),
+            Convert.ToInt64(obj.Properties["MemoryAssigned"].Value),
+            Convert.ToInt64(obj.Properties["MemoryDemand"].Value),
+            Convert.ToInt32(obj.Properties["ProcessorCount"].Value),
+            obj.Properties["Notes"].Value?.ToString(),
+            obj.Properties["AutomaticStartAction"].Value?.ToString() ?? "",
+            obj.Properties["AutomaticStopAction"].Value?.ToString() ?? "",
+            obj.Properties["CheckpointType"].Value?.ToString() ?? "",
+            ParseDisks(obj.Properties["Disks"].Value),
+            ParseNetworkAdapters(obj.Properties["NetworkAdapters"].Value),
+            ParseSnapshots(obj.Properties["Snapshots"].Value));
+    }
+
+    private static IReadOnlyList<VmDiskInfo> ParseDisks(object? value)
+    {
+        if (value is not System.Collections.IEnumerable items)
+            return Array.Empty<VmDiskInfo>();
+
+        return items.Cast<PSObject>().Select(d => new VmDiskInfo(
+            d.Properties["ControllerType"].Value?.ToString() ?? "",
+            Convert.ToInt32(d.Properties["ControllerNumber"].Value),
+            Convert.ToInt32(d.Properties["ControllerLocation"].Value),
+            d.Properties["Path"].Value?.ToString() ?? "",
+            d.Properties["VhdFormat"].Value?.ToString() ?? "Unknown",
+            d.Properties["VhdType"].Value?.ToString() ?? "Unknown",
+            Convert.ToInt64(d.Properties["CurrentSize"].Value),
+            Convert.ToInt64(d.Properties["MaxSize"].Value)
+        )).ToList();
+    }
+
+    private static IReadOnlyList<VmNetworkAdapterInfo> ParseNetworkAdapters(object? value)
+    {
+        if (value is not System.Collections.IEnumerable items)
+            return Array.Empty<VmNetworkAdapterInfo>();
+
+        return items.Cast<PSObject>().Select(n => new VmNetworkAdapterInfo(
+            n.Properties["Name"].Value?.ToString() ?? "",
+            n.Properties["SwitchName"].Value?.ToString() ?? "",
+            n.Properties["MacAddress"].Value?.ToString() ?? "",
+            ParseStringArray(n.Properties["IpAddresses"].Value)
+        )).ToList();
+    }
+
+    private static IReadOnlyList<VmSnapshotInfo> ParseSnapshots(object? value)
+    {
+        if (value is not System.Collections.IEnumerable items)
+            return Array.Empty<VmSnapshotInfo>();
+
+        return items.Cast<PSObject>().Select(s => new VmSnapshotInfo(
+            Guid.Parse(s.Properties["Id"].Value?.ToString() ?? Guid.Empty.ToString()),
+            s.Properties["Name"].Value?.ToString() ?? "",
+            DateTime.Parse(s.Properties["CreationTime"].Value?.ToString() ?? DateTime.MinValue.ToString("o")),
+            s.Properties["ParentSnapshotName"].Value?.ToString()
+        )).ToList();
+    }
+
+    private static IReadOnlyList<string> ParseStringArray(object? value)
+    {
+        if (value is not System.Collections.IEnumerable items)
+            return Array.Empty<string>();
+
+        return items.Cast<object>().Select(o => o.ToString() ?? "").ToList();
+    }
+
     private async Task<IReadOnlyList<PSObject>> RunRemoteAsync(
         string hostname, string username, string password, string script, CancellationToken ct)
     {

@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using HyperVCenter.Application;
 using HyperVCenter.Infrastructure;
 using HyperVCenter.Web.Middleware;
@@ -18,7 +19,9 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 // API
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {

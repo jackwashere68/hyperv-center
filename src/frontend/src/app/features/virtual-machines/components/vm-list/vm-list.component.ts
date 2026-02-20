@@ -76,7 +76,7 @@ export class VmListComponent {
 
   openProperties(vm: VirtualMachine): void {
     this.dialog.open(VmPropertiesDialogComponent, {
-      width: '480px',
+      width: '720px',
       data: vm,
     });
   }

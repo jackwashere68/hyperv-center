@@ -68,4 +68,39 @@ public class StubHyperVManagementService : IHyperVManagementService
         _logger.LogInformation("[Stub] CreateVM {Name} on {Hostname}", name, hostname);
         return Task.FromResult(Guid.NewGuid());
     }
+
+    public Task<VmHardwareInfo> GetVmHardwareAsync(string hostname, string username, string password, Guid vmId, CancellationToken ct)
+    {
+        _logger.LogInformation("[Stub] GetVmHardware {VmId} on {Hostname}", vmId, hostname);
+        return Task.FromResult(new VmHardwareInfo(
+            Generation: 2,
+            Version: "9.0",
+            Path: @"C:\Hyper-V\Virtual Machines",
+            Uptime: TimeSpan.FromHours(48.5),
+            DynamicMemoryEnabled: true,
+            MemoryStartup: 4294967296,     // 4 GB
+            MemoryMinimum: 536870912,      // 512 MB
+            MemoryMaximum: 8589934592,     // 8 GB
+            MemoryAssigned: 4294967296,    // 4 GB
+            MemoryDemand: 3221225472,      // 3 GB
+            ProcessorCount: 4,
+            Notes: "Domain controller for lab environment",
+            AutomaticStartAction: "StartIfPreviouslyRunning",
+            AutomaticStopAction: "Save",
+            CheckpointType: "Production",
+            Disks: new List<VmDiskInfo>
+            {
+                new("SCSI", 0, 0, @"C:\Hyper-V\DC01\DC01.vhdx", "VHDX", "Dynamic", 21474836480, 107374182400),
+                new("SCSI", 0, 1, @"C:\Hyper-V\DC01\DC01-Data.vhdx", "VHDX", "Dynamic", 5368709120, 53687091200),
+            },
+            NetworkAdapters: new List<VmNetworkAdapterInfo>
+            {
+                new("Network Adapter", "Default Switch", "00155D010203", new List<string> { "192.168.1.10", "fe80::1" }),
+            },
+            Snapshots: new List<VmSnapshotInfo>
+            {
+                new(Guid.NewGuid(), "Before Updates", DateTime.UtcNow.AddDays(-7), null),
+                new(Guid.NewGuid(), "After Updates", DateTime.UtcNow.AddDays(-3), "Before Updates"),
+            }));
+    }
 }

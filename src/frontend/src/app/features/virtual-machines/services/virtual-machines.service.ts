@@ -4,6 +4,7 @@ import {
   VirtualMachine,
   CreateVirtualMachineRequest,
 } from '@core/models/virtual-machine.model';
+import { VmHardwareInfo } from '@core/models/vm-hardware.model';
 
 @Injectable({ providedIn: 'root' })
 export class VirtualMachinesService {
@@ -44,5 +45,9 @@ export class VirtualMachinesService {
 
   delete(id: string) {
     return this.api.delete<void>(`${this.path}/${id}`);
+  }
+
+  getHardware(id: string) {
+    return this.api.get<VmHardwareInfo>(`${this.path}/${id}/hardware`);
   }
 }

@@ -45,6 +45,15 @@ public class VirtualMachinesController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
+    [HttpGet("{id:guid}/hardware")]
+    [ProducesResponseType(typeof(VmHardwareDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetHardware(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetVmHardwareQuery(id), cancellationToken);
+        return Ok(result);
+    }
+
     [HttpPost("{id:guid}/start")]
     [ProducesResponseType(typeof(VirtualMachineDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> Start(Guid id, CancellationToken cancellationToken)

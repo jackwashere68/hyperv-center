@@ -1,44 +1,231 @@
-<h2 mat-dialog-title>Virtual Machine Properties</h2>
+<h2 mat-dialog-title>{{ data.name }} — Properties</h2>
 
 <mat-dialog-content>
-  <div class="grid grid-cols-2 gap-4">
-    <div>
-      <div class="text-sm text-gray-500">Name</div>
-      <div>{{ data.name }}</div>
+  @if (loading()) {
+    <div class="flex justify-center py-8">
+      <mat-spinner diameter="40" />
     </div>
-    <div>
-      <div class="text-sm text-gray-500">Host</div>
-      <div>{{ data.hostName }}</div>
+  } @else if (error()) {
+    <div class="text-red-600 py-4">{{ error() }}</div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <div class="text-sm text-gray-500">Name</div>
+        <div>{{ data.name }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Host</div>
+        <div>{{ data.hostName }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">State</div>
+        <div>{{ data.state | vmState }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">CPUs</div>
+        <div>{{ data.cpuCount }}</div>
+      </div>
+      <div>
+        <div class="text-sm text-gray-500">Memory</div>
+        <div>{{ data.memoryBytes | bytes }}</div>
+      </div>
     </div>
-    <div>
-      <div class="text-sm text-gray-500">State</div>
-      <div>{{ data.state | vmState }}</div>
-    </div>
-    <div>
-      <div class="text-sm text-gray-500">CPUs</div>
-      <div>{{ data.cpuCount }}</div>
-    </div>
-    <div>
-      <div class="text-sm text-gray-500">Memory</div>
-      <div>{{ data.memoryBytes | bytes }}</div>
-    </div>
-    <div>
-      <div class="text-sm text-gray-500">External ID</div>
-      <div>{{ data.externalId ?? '—' }}</div>
-    </div>
-    <div>
-      <div class="text-sm text-gray-500">Notes</div>
-      <div>{{ data.notes ?? '—' }}</div>
-    </div>
-    <div>
-      <div class="text-sm text-gray-500">Created</div>
-      <div>{{ data.createdAt | date: 'medium' }}</div>
-    </div>
-    <div>
-      <div class="text-sm text-gray-500">Updated</div>
-      <div>{{ data.updatedAt ? (data.updatedAt | date: 'medium') : '—' }}</div>
-    </div>
-  </div>
+  } @else {
+    @let hw = hardware()!;
+    <mat-tab-group>
+      <!-- Overview Tab -->
+      <mat-tab label="Overview">
+        <div class="grid grid-cols-2 gap-4 pt-4">
+          <div>
+            <div class="text-sm text-gray-500">Name</div>
+            <div>{{ data.name }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Host</div>
+            <div>{{ data.hostName }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">State</div>
+            <div>{{ data.state | vmState }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">CPUs</div>
+            <div>{{ hw.processorCount }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Generation</div>
+            <div>{{ hw.generation }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Version</div>
+            <div>{{ hw.version }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Uptime</div>
+            <div>{{ hw.uptime }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Path</div>
+            <div class="break-all">{{ hw.path }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Start Action</div>
+            <div>{{ hw.automaticStartAction }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Stop Action</div>
+            <div>{{ hw.automaticStopAction }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Checkpoint Type</div>
+            <div>{{ hw.checkpointType }}</div>
+          </div>
+          <div class="col-span-2">
+            <div class="text-sm text-gray-500">Notes</div>
+            <div>{{ hw.notes ?? '—' }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Created</div>
+            <div>{{ data.createdAt | date: 'medium' }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Updated</div>
+            <div>{{ data.updatedAt ? (data.updatedAt | date: 'medium') : '—' }}</div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Memory Tab -->
+      <mat-tab label="Memory">
+        <div class="grid grid-cols-2 gap-4 pt-4">
+          <div>
+            <div class="text-sm text-gray-500">Dynamic Memory</div>
+            <div>{{ hw.dynamicMemoryEnabled ? 'Enabled' : 'Disabled' }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Startup</div>
+            <div>{{ hw.memoryStartup | bytes }}</div>
+          </div>
+          @if (hw.dynamicMemoryEnabled) {
+            <div>
+              <div class="text-sm text-gray-500">Minimum</div>
+              <div>{{ hw.memoryMinimum | bytes }}</div>
+            </div>
+            <div>
+              <div class="text-sm text-gray-500">Maximum</div>
+              <div>{{ hw.memoryMaximum | bytes }}</div>
+            </div>
+          }
+          <div>
+            <div class="text-sm text-gray-500">Assigned</div>
+            <div>{{ hw.memoryAssigned | bytes }}</div>
+          </div>
+          <div>
+            <div class="text-sm text-gray-500">Demand</div>
+            <div>{{ hw.memoryDemand | bytes }}</div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Disks Tab -->
+      <mat-tab label="Disks">
+        <div class="pt-4">
+          @if (hw.disks.length === 0) {
+            <div class="text-gray-500">No disks attached</div>
+          } @else {
+            <table mat-table [dataSource]="hw.disks" class="w-full">
+              <ng-container matColumnDef="controller">
+                <th mat-header-cell *matHeaderCellDef>Controller</th>
+                <td mat-cell *matCellDef="let disk">{{ disk.controllerType }}</td>
+              </ng-container>
+              <ng-container matColumnDef="location">
+                <th mat-header-cell *matHeaderCellDef>Location</th>
+                <td mat-cell *matCellDef="let disk">{{ disk.controllerNumber }}:{{ disk.controllerLocation }}</td>
+              </ng-container>
+              <ng-container matColumnDef="path">
+                <th mat-header-cell *matHeaderCellDef>Path</th>
+                <td mat-cell *matCellDef="let disk" class="break-all">{{ disk.path }}</td>
+              </ng-container>
+              <ng-container matColumnDef="format">
+                <th mat-header-cell *matHeaderCellDef>Format</th>
+                <td mat-cell *matCellDef="let disk">{{ disk.vhdFormat }}</td>
+              </ng-container>
+              <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let disk">{{ disk.vhdType }}</td>
+              </ng-container>
+              <ng-container matColumnDef="currentSize">
+                <th mat-header-cell *matHeaderCellDef>Current Size</th>
+                <td mat-cell *matCellDef="let disk">{{ disk.currentSize | bytes }}</td>
+              </ng-container>
+              <ng-container matColumnDef="maxSize">
+                <th mat-header-cell *matHeaderCellDef>Max Size</th>
+                <td mat-cell *matCellDef="let disk">{{ disk.maxSize | bytes }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="diskColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: diskColumns"></tr>
+            </table>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Network Tab -->
+      <mat-tab label="Network">
+        <div class="pt-4">
+          @if (hw.networkAdapters.length === 0) {
+            <div class="text-gray-500">No network adapters</div>
+          } @else {
+            <table mat-table [dataSource]="hw.networkAdapters" class="w-full">
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Name</th>
+                <td mat-cell *matCellDef="let nic">{{ nic.name }}</td>
+              </ng-container>
+              <ng-container matColumnDef="switch">
+                <th mat-header-cell *matHeaderCellDef>Switch</th>
+                <td mat-cell *matCellDef="let nic">{{ nic.switchName || '—' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="macAddress">
+                <th mat-header-cell *matHeaderCellDef>MAC Address</th>
+                <td mat-cell *matCellDef="let nic">{{ nic.macAddress }}</td>
+              </ng-container>
+              <ng-container matColumnDef="ipAddresses">
+                <th mat-header-cell *matHeaderCellDef>IP Addresses</th>
+                <td mat-cell *matCellDef="let nic">{{ nic.ipAddresses.join(', ') || '—' }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="nicColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: nicColumns"></tr>
+            </table>
+          }
+        </div>
+      </mat-tab>
+
+      <!-- Snapshots Tab -->
+      <mat-tab label="Snapshots">
+        <div class="pt-4">
+          @if (hw.snapshots.length === 0) {
+            <div class="text-gray-500">No snapshots</div>
+          } @else {
+            <table mat-table [dataSource]="hw.snapshots" class="w-full">
+              <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Name</th>
+                <td mat-cell *matCellDef="let snap">{{ snap.name }}</td>
+              </ng-container>
+              <ng-container matColumnDef="creationTime">
+                <th mat-header-cell *matHeaderCellDef>Created</th>
+                <td mat-cell *matCellDef="let snap">{{ snap.creationTime | date: 'medium' }}</td>
+              </ng-container>
+              <ng-container matColumnDef="parent">
+                <th mat-header-cell *matHeaderCellDef>Parent</th>
+                <td mat-cell *matCellDef="let snap">{{ snap.parentSnapshotName ?? '—' }}</td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="snapshotColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: snapshotColumns"></tr>
+            </table>
+          }
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  }
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
