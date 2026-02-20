@@ -1,14 +1,22 @@
 export enum VmState {
-  PoweredOff = 0,
-  Running = 1,
-  Paused = 2,
-  Saved = 3,
+  Off = 'Off',
+  Running = 'Running',
+  Paused = 'Paused',
+  Saved = 'Saved',
+  Starting = 'Starting',
+  Stopping = 'Stopping',
+  Saving = 'Saving',
+  Pausing = 'Pausing',
+  Resuming = 'Resuming',
+  Other = 'Other',
 }
 
 export interface VirtualMachine {
   id: string;
   name: string;
-  host: string;
+  hyperVHostId: string;
+  hostName: string;
+  externalId: string | null;
   state: VmState;
   cpuCount: number;
   memoryBytes: number;
@@ -19,8 +27,10 @@ export interface VirtualMachine {
 
 export interface CreateVirtualMachineRequest {
   name: string;
-  host: string;
+  hyperVHostId: string;
   cpuCount: number;
   memoryBytes: number;
   notes?: string;
 }
+
+export type VmAction = 'start' | 'stop' | 'pause' | 'save' | 'restart';

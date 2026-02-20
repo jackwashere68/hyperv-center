@@ -15,6 +15,11 @@ export interface HyperVHost {
   notes: string | null;
   clusterId: string | null;
   clusterName: string | null;
+  osVersion: string | null;
+  processorCount: number | null;
+  totalMemoryBytes: number | null;
+  lastSyncedAt: string | null;
+  lastSyncError: string | null;
   createdAt: string;
   updatedAt: string | null;
 }

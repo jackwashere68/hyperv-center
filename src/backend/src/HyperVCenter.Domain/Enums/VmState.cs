@@ -2,8 +2,14 @@ namespace HyperVCenter.Domain.Enums;
 
 public enum VmState
 {
-    PoweredOff,
+    Off,
     Running,
     Paused,
-    Saved
+    Saved,
+    Starting,
+    Stopping,
+    Saving,
+    Pausing,
+    Resuming,
+    Other
 }

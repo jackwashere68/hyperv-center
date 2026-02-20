@@ -21,4 +21,28 @@ export class VirtualMachinesService {
   create(request: CreateVirtualMachineRequest) {
     return this.api.post<VirtualMachine>(this.path, request);
   }
+
+  start(id: string) {
+    return this.api.post<VirtualMachine>(`${this.path}/${id}/start`, {});
+  }
+
+  stop(id: string, force = false) {
+    return this.api.post<VirtualMachine>(`${this.path}/${id}/stop?force=${force}`, {});
+  }
+
+  pause(id: string) {
+    return this.api.post<VirtualMachine>(`${this.path}/${id}/pause`, {});
+  }
+
+  save(id: string) {
+    return this.api.post<VirtualMachine>(`${this.path}/${id}/save`, {});
+  }
+
+  restart(id: string) {
+    return this.api.post<VirtualMachine>(`${this.path}/${id}/restart`, {});
+  }
+
+  delete(id: string) {
+    return this.api.delete<void>(`${this.path}/${id}`);
+  }
 }

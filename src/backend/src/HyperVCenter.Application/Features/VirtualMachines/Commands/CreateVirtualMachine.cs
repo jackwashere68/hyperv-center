@@ -3,13 +3,14 @@ using HyperVCenter.Application.Common.Interfaces;
 using HyperVCenter.Domain.Entities;
 using HyperVCenter.Domain.Enums;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace HyperVCenter.Application.Features.VirtualMachines.Commands;
 
 // Command
 public record CreateVirtualMachineCommand(
     string Name,
-    string Host,
+    Guid HyperVHostId,
     int CpuCount,
     long MemoryBytes,
     string? Notes) : IRequest<VirtualMachineDto>;
@@ -18,22 +19,41 @@ public record CreateVirtualMachineCommand(
 public class CreateVirtualMachineHandler : IRequestHandler<CreateVirtualMachineCommand, VirtualMachineDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IEncryptionService _encryption;
+    private readonly IHyperVManagementService _hyperV;
 
-    public CreateVirtualMachineHandler(IApplicationDbContext context)
+    public CreateVirtualMachineHandler(
+        IApplicationDbContext context,
+        IEncryptionService encryption,
+        IHyperVManagementService hyperV)
     {
         _context = context;
+        _encryption = encryption;
+        _hyperV = hyperV;
     }
 
     public async Task<VirtualMachineDto> Handle(
         CreateVirtualMachineCommand request,
         CancellationToken cancellationToken)
     {
+        var host = await _context.HyperVHosts
+            .Include(h => h.Credential)
+            .FirstOrDefaultAsync(h => h.Id == request.HyperVHostId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Host {request.HyperVHostId} not found.");
+
+        var password = _encryption.Decrypt(host.Credential.EncryptedPassword);
+
+        var externalId = await _hyperV.CreateVmAsync(
+            host.Hostname, host.Credential.Username, password,
+            request.Name, request.CpuCount, request.MemoryBytes, cancellationToken);
+
         var vm = new VirtualMachine
         {
             Id = Guid.NewGuid(),
             Name = request.Name,
-            Host = request.Host,
-            State = VmState.PoweredOff,
+            HyperVHostId = request.HyperVHostId,
+            ExternalId = externalId,
+            State = VmState.Off,
             CpuCount = request.CpuCount,
             MemoryBytes = request.MemoryBytes,
             Notes = request.Notes,
@@ -45,7 +65,9 @@ public class CreateVirtualMachineHandler : IRequestHandler<CreateVirtualMachineC
         return new VirtualMachineDto(
             vm.Id,
             vm.Name,
-            vm.Host,
+            vm.HyperVHostId,
+            host.Name,
+            vm.ExternalId,
             vm.State,
             vm.CpuCount,
             vm.MemoryBytes,
@@ -58,15 +80,16 @@ public class CreateVirtualMachineHandler : IRequestHandler<CreateVirtualMachineC
 // Validator
 public class CreateVirtualMachineValidator : AbstractValidator<CreateVirtualMachineCommand>
 {
-    public CreateVirtualMachineValidator()
+    public CreateVirtualMachineValidator(IApplicationDbContext context)
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required.")
             .MaximumLength(256).WithMessage("Name must not exceed 256 characters.");
 
-        RuleFor(x => x.Host)
+        RuleFor(x => x.HyperVHostId)
             .NotEmpty().WithMessage("Host is required.")
-            .MaximumLength(256).WithMessage("Host must not exceed 256 characters.");
+            .MustAsync(async (id, ct) => await context.HyperVHosts.AnyAsync(h => h.Id == id, ct))
+            .WithMessage("The specified host does not exist.");
 
         RuleFor(x => x.CpuCount)
             .GreaterThan(0).WithMessage("CPU count must be at least 1.");

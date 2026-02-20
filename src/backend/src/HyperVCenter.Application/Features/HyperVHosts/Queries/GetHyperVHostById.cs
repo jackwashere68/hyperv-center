@@ -29,6 +29,8 @@ public class GetHyperVHostByIdHandler : IRequestHandler<GetHyperVHostByIdQuery, 
                 h.CredentialId, h.Credential.Name,
                 h.Status, h.Notes,
                 h.ClusterId, h.Cluster != null ? h.Cluster.Name : null,
+                h.OsVersion, h.ProcessorCount, h.TotalMemoryBytes,
+                h.LastSyncedAt, h.LastSyncError,
                 h.CreatedAt, h.UpdatedAt))
             .FirstOrDefaultAsync(cancellationToken);
     }

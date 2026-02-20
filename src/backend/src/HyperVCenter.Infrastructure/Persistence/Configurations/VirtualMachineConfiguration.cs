@@ -16,10 +16,6 @@ public class VirtualMachineConfiguration : IEntityTypeConfiguration<VirtualMachi
             .HasMaxLength(256)
             .IsRequired();
 
-        builder.Property(vm => vm.Host)
-            .HasMaxLength(256)
-            .IsRequired();
-
         builder.Property(vm => vm.State)
             .HasConversion<string>()
             .HasMaxLength(32)
@@ -30,5 +26,10 @@ public class VirtualMachineConfiguration : IEntityTypeConfiguration<VirtualMachi
 
         builder.Property(vm => vm.CreatedAt)
             .IsRequired();
+
+        builder.HasOne(vm => vm.HyperVHost)
+            .WithMany(h => h.VirtualMachines)
+            .HasForeignKey(vm => vm.HyperVHostId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

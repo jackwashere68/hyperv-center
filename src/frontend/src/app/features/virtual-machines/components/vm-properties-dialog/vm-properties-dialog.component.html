@@ -8,7 +8,7 @@
     </div>
     <div>
       <div class="text-sm text-gray-500">Host</div>
-      <div>{{ data.host }}</div>
+      <div>{{ data.hostName }}</div>
     </div>
     <div>
       <div class="text-sm text-gray-500">State</div>
@@ -21,6 +21,10 @@
     <div>
       <div class="text-sm text-gray-500">Memory</div>
       <div>{{ data.memoryBytes | bytes }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">External ID</div>
+      <div>{{ data.externalId ?? '—' }}</div>
     </div>
     <div>
       <div class="text-sm text-gray-500">Notes</div>

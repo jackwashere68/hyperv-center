@@ -30,4 +30,8 @@ export class HostsService {
   delete(id: string) {
     return this.api.delete<void>(`${this.path}/${id}`);
   }
+
+  sync(id: string) {
+    return this.api.post<HyperVHost>(`${this.path}/${id}/sync`, {});
+  }
 }

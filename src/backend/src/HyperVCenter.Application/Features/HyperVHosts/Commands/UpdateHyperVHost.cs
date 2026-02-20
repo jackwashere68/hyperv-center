@@ -49,6 +49,8 @@ public class UpdateHyperVHostHandler : IRequestHandler<UpdateHyperVHostCommand, 
             host.CredentialId, credential!.Name,
             host.Status, host.Notes,
             host.ClusterId, host.Cluster?.Name,
+            host.OsVersion, host.ProcessorCount, host.TotalMemoryBytes,
+            host.LastSyncedAt, host.LastSyncError,
             host.CreatedAt, host.UpdatedAt);
     }
 }

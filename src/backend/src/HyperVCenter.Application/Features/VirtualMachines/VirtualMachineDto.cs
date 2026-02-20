@@ -5,7 +5,9 @@ namespace HyperVCenter.Application.Features.VirtualMachines;
 public record VirtualMachineDto(
     Guid Id,
     string Name,
-    string Host,
+    Guid HyperVHostId,
+    string HostName,
+    Guid? ExternalId,
     VmState State,
     int CpuCount,
     long MemoryBytes,

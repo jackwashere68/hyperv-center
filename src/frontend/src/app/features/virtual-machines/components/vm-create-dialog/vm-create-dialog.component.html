@@ -22,15 +22,13 @@
 
     <mat-form-field>
       <mat-label>Host</mat-label>
-      <input
-        matInput
-        formControlName="host"
-        placeholder="hyperv-host-01"
-      />
-      @if (form.controls.host.hasError('required')) {
+      <mat-select formControlName="hyperVHostId">
+        @for (host of hostsStore.hostEntities(); track host.id) {
+          <mat-option [value]="host.id">{{ host.name }} ({{ host.hostname }})</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.hyperVHostId.hasError('required')) {
         <mat-error>Host is required.</mat-error>
-      } @else if (form.controls.host.hasError('maxlength')) {
-        <mat-error>Host must not exceed 256 characters.</mat-error>
       }
     </mat-form-field>
 

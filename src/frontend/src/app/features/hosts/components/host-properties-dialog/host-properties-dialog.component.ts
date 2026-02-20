@@ -4,6 +4,7 @@ import { MatDialogModule, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { HyperVHost } from '@core/models/hyperv-host.model';
 import { HostStatusPipe } from '@shared/pipes/host-status.pipe';
+import { BytesPipe } from '@shared/pipes/bytes.pipe';
 
 @Component({
   selector: 'app-host-properties-dialog',
@@ -13,6 +14,7 @@ import { HostStatusPipe } from '@shared/pipes/host-status.pipe';
     MatDialogModule,
     MatButtonModule,
     HostStatusPipe,
+    BytesPipe,
   ],
 })
 export class HostPropertiesDialogComponent {

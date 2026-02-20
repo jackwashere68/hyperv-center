@@ -1,5 +1,6 @@
 using FluentValidation;
 using HyperVCenter.Application.Common.Interfaces;
+using HyperVCenter.Application.Common.Mappings;
 using HyperVCenter.Domain.Entities;
 using HyperVCenter.Domain.Enums;
 using MediatR;
@@ -18,10 +19,17 @@ public record CreateHyperVHostCommand(
 public class CreateHyperVHostHandler : IRequestHandler<CreateHyperVHostCommand, HyperVHostDto>
 {
     private readonly IApplicationDbContext _context;
+    private readonly IEncryptionService _encryption;
+    private readonly IHyperVManagementService _hyperV;
 
-    public CreateHyperVHostHandler(IApplicationDbContext context)
+    public CreateHyperVHostHandler(
+        IApplicationDbContext context,
+        IEncryptionService encryption,
+        IHyperVManagementService hyperV)
     {
         _context = context;
+        _encryption = encryption;
+        _hyperV = hyperV;
     }
 
     public async Task<HyperVHostDto> Handle(
@@ -44,11 +52,55 @@ public class CreateHyperVHostHandler : IRequestHandler<CreateHyperVHostCommand, 
         _context.HyperVHosts.Add(host);
         await _context.SaveChangesAsync(cancellationToken);
 
+        // Attempt connectivity validation and VM discovery
+        var password = _encryption.Decrypt(credential!.EncryptedPassword);
+        try
+        {
+            var hostInfo = await _hyperV.GetHostInfoAsync(
+                host.Hostname, credential.Username, password, cancellationToken);
+
+            host.OsVersion = hostInfo.OsVersion;
+            host.ProcessorCount = hostInfo.ProcessorCount;
+            host.TotalMemoryBytes = hostInfo.TotalMemoryBytes;
+            host.Status = HostStatus.Online;
+
+            var vms = await _hyperV.GetVirtualMachinesAsync(
+                host.Hostname, credential.Username, password, cancellationToken);
+
+            foreach (var vmInfo in vms)
+            {
+                var vm = new VirtualMachine
+                {
+                    Id = Guid.NewGuid(),
+                    Name = vmInfo.Name,
+                    HyperVHostId = host.Id,
+                    ExternalId = vmInfo.Id,
+                    State = VmStateMapper.MapFromHyperV(vmInfo.State),
+                    CpuCount = vmInfo.CpuCount,
+                    MemoryBytes = vmInfo.MemoryBytes,
+                };
+                _context.VirtualMachines.Add(vm);
+            }
+
+            host.LastSyncedAt = DateTime.UtcNow;
+            host.LastSyncError = null;
+        }
+        catch (Exception ex)
+        {
+            host.Status = HostStatus.Error;
+            host.LastSyncError = ex.Message;
+            host.LastSyncedAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
         return new HyperVHostDto(
             host.Id, host.Name, host.Hostname,
-            host.CredentialId, credential!.Name,
+            host.CredentialId, credential.Name,
             host.Status, host.Notes,
             null, null,
+            host.OsVersion, host.ProcessorCount, host.TotalMemoryBytes,
+            host.LastSyncedAt, host.LastSyncError,
             host.CreatedAt, host.UpdatedAt);
     }
 }

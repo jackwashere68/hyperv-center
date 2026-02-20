@@ -69,4 +69,12 @@ public class HyperVHostsController : ControllerBase
         var result = await _sender.Send(new DeleteHyperVHostCommand(id), cancellationToken);
         return result ? NoContent() : NotFound();
     }
+
+    [HttpPost("{id:guid}/sync")]
+    [ProducesResponseType(typeof(HyperVHostDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Sync(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new SyncHyperVHostCommand(id), cancellationToken);
+        return Ok(result);
+    }
 }

@@ -25,6 +25,14 @@ public static class DependencyInjection
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<IClusterDetectionService, StubClusterDetectionService>();
 
+        var useStub = configuration["HyperV:UseStubService"]?.Equals("false", StringComparison.OrdinalIgnoreCase) != true;
+        if (useStub)
+            services.AddScoped<IHyperVManagementService, StubHyperVManagementService>();
+        else
+            services.AddScoped<IHyperVManagementService, PowerShellHyperVManagementService>();
+
+        services.AddHostedService<HostSyncBackgroundService>();
+
         return services;
     }
 }

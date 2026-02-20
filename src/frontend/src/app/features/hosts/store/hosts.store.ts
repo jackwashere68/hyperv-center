@@ -98,6 +98,24 @@ export const HostsStore = signalStore(
           throw new Error('Failed to delete host.');
         }
       },
+      async sync(id: string) {
+        try {
+          const host = await firstValueFrom(hostsService.sync(id));
+          patchState(
+            store,
+            updateEntity(
+              { id, changes: host },
+              { collection: 'host' },
+            ),
+          );
+          return host;
+        } catch {
+          patchState(store, {
+            error: 'Failed to sync host.',
+          });
+          throw new Error('Failed to sync host.');
+        }
+      },
     }),
   ),
   withHooks({

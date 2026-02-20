@@ -35,6 +35,8 @@ public class GetClusterByIdHandler : IRequestHandler<GetClusterByIdQuery, Cluste
                     n.CredentialId, n.Credential.Name,
                     n.Status, n.Notes,
                     n.ClusterId, c.Name,
+                    n.OsVersion, n.ProcessorCount, n.TotalMemoryBytes,
+                    n.LastSyncedAt, n.LastSyncError,
                     n.CreatedAt, n.UpdatedAt)).ToList(),
                 c.CreatedAt, c.UpdatedAt))
             .FirstOrDefaultAsync(cancellationToken);

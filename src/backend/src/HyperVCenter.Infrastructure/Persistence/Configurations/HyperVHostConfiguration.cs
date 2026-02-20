@@ -16,6 +16,8 @@ public class HyperVHostConfiguration : IEntityTypeConfiguration<HyperVHost>
         builder.Property(h => h.Hostname).HasMaxLength(256).IsRequired();
         builder.Property(h => h.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(h => h.Notes).HasMaxLength(2000);
+        builder.Property(h => h.OsVersion).HasMaxLength(512);
+        builder.Property(h => h.LastSyncError).HasMaxLength(2000);
         builder.Property(h => h.CreatedAt).IsRequired();
 
         builder.HasOne(h => h.Credential)

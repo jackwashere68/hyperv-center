@@ -26,9 +26,9 @@
       <td mat-cell *matCellDef="let vm">{{ vm.name }}</td>
     </ng-container>
 
-    <ng-container matColumnDef="host">
+    <ng-container matColumnDef="hostName">
       <th mat-header-cell *matHeaderCellDef>Host</th>
-      <td mat-cell *matCellDef="let vm">{{ vm.host }}</td>
+      <td mat-cell *matCellDef="let vm">{{ vm.hostName }}</td>
     </ng-container>
 
     <ng-container matColumnDef="state">
@@ -38,6 +38,9 @@
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
           [class]="stateColor(vm.state)"
         >
+          @if (isTransitional(vm.state)) {
+            <mat-spinner diameter="12" class="mr-1"></mat-spinner>
+          }
           {{ vm.state | vmState }}
         </span>
       </td>
@@ -56,12 +59,65 @@
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef>Actions</th>
       <td mat-cell *matCellDef="let vm">
-        <button
-          mat-icon-button
-          (click)="openProperties(vm)"
-        >
-          <mat-icon>info</mat-icon>
-        </button>
+        @if (actioningVms.has(vm.id)) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <button
+            mat-icon-button
+            matTooltip="Start"
+            [disabled]="isTransitional(vm.state) || vm.state === VmState.Running"
+            (click)="performAction(vm.id, 'start')"
+          >
+            <mat-icon>play_arrow</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            matTooltip="Stop"
+            [disabled]="isTransitional(vm.state) || vm.state === VmState.Off"
+            (click)="performAction(vm.id, 'stop')"
+          >
+            <mat-icon>stop</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            matTooltip="Pause"
+            [disabled]="vm.state !== VmState.Running"
+            (click)="performAction(vm.id, 'pause')"
+          >
+            <mat-icon>pause</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            matTooltip="Save"
+            [disabled]="vm.state !== VmState.Running && vm.state !== VmState.Paused"
+            (click)="performAction(vm.id, 'save')"
+          >
+            <mat-icon>save</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            matTooltip="Restart"
+            [disabled]="vm.state !== VmState.Running"
+            (click)="performAction(vm.id, 'restart')"
+          >
+            <mat-icon>restart_alt</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            (click)="openProperties(vm)"
+            matTooltip="Properties"
+          >
+            <mat-icon>info</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            color="warn"
+            matTooltip="Delete"
+            (click)="deleteVm(vm.id, vm.name)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        }
       </td>
     </ng-container>
 

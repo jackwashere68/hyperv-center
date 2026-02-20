@@ -13,4 +13,10 @@ public class HyperVHost : BaseEntity
     public string? Notes { get; set; }
     public Guid? ClusterId { get; set; }
     public Cluster? Cluster { get; set; }
+    public string? OsVersion { get; set; }
+    public int? ProcessorCount { get; set; }
+    public long? TotalMemoryBytes { get; set; }
+    public DateTime? LastSyncedAt { get; set; }
+    public string? LastSyncError { get; set; }
+    public ICollection<VirtualMachine> VirtualMachines { get; set; } = new List<VirtualMachine>();
 }

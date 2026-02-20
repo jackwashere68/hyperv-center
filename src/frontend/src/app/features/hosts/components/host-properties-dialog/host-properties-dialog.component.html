@@ -23,6 +23,26 @@
       <div>{{ data.clusterName ?? '—' }}</div>
     </div>
     <div>
+      <div class="text-sm text-gray-500">OS Version</div>
+      <div>{{ data.osVersion ?? '—' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Processors</div>
+      <div>{{ data.processorCount ?? '—' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Total Memory</div>
+      <div>{{ data.totalMemoryBytes ? (data.totalMemoryBytes | bytes) : '—' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Last Synced</div>
+      <div>{{ data.lastSyncedAt ? (data.lastSyncedAt | date: 'medium') : '—' }}</div>
+    </div>
+    <div>
+      <div class="text-sm text-gray-500">Sync Error</div>
+      <div>{{ data.lastSyncError ?? '—' }}</div>
+    </div>
+    <div>
       <div class="text-sm text-gray-500">Notes</div>
       <div>{{ data.notes ?? '—' }}</div>
     </div>

@@ -4,6 +4,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { HostsStore } from '../../store/hosts.store';
 import { HyperVHost, HostStatus } from '@core/models/hyperv-host.model';
@@ -26,6 +28,8 @@ import { HostPropertiesDialogComponent } from '../host-properties-dialog/host-pr
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
+    MatTooltipModule,
     PageHeaderComponent,
     HostStatusPipe,
   ],
@@ -51,6 +55,8 @@ export class HostListComponent {
     [HostStatus.Error]: 'bg-yellow-100 text-yellow-800',
   };
 
+  readonly syncingHosts = new Set<string>();
+
   statusColor(status: HostStatus): string {
     return this.statusColors[status] ?? '';
   }
@@ -71,6 +77,16 @@ export class HostListComponent {
       width: '480px',
       data: host,
     });
+  }
+
+  async syncHost(id: string): Promise<void> {
+    this.syncingHosts.add(id);
+    try {
+      await this.store.sync(id);
+      await this.store.loadAll();
+    } finally {
+      this.syncingHosts.delete(id);
+    }
   }
 
   deleteHost(id: string, name: string): void {

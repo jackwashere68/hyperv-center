@@ -12,5 +12,10 @@ public record HyperVHostDto(
     string? Notes,
     Guid? ClusterId,
     string? ClusterName,
+    string? OsVersion,
+    int? ProcessorCount,
+    long? TotalMemoryBytes,
+    DateTime? LastSyncedAt,
+    string? LastSyncError,
     DateTime CreatedAt,
     DateTime? UpdatedAt);

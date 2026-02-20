@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { VirtualMachinesStore } from '../../store/virtual-machines.store';
+import { HostsStore } from '../../../hosts/store/hosts.store';
 
 const GB = 1_073_741_824;
 
@@ -29,6 +30,7 @@ export class VmCreateDialogComponent {
   private readonly fb = inject(FormBuilder);
   private readonly dialogRef = inject(MatDialogRef<VmCreateDialogComponent>);
   private readonly store = inject(VirtualMachinesStore);
+  readonly hostsStore = inject(HostsStore);
 
   readonly memoryOptions = Array.from({ length: 32 }, (_, i) => ({
     label: `${i + 1} GB`,
@@ -37,7 +39,7 @@ export class VmCreateDialogComponent {
 
   readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(256)]],
-    host: ['', [Validators.required, Validators.maxLength(256)]],
+    hyperVHostId: ['', [Validators.required]],
     cpuCount: [1, [Validators.required, Validators.min(1)]],
     memoryBytes: [GB, [Validators.required, Validators.min(1)]],
     notes: [''],

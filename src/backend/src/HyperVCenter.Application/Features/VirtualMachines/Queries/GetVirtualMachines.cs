@@ -23,11 +23,14 @@ public class GetVirtualMachinesHandler : IRequestHandler<GetVirtualMachinesQuery
     {
         return await _context.VirtualMachines
             .AsNoTracking()
+            .Include(vm => vm.HyperVHost)
             .OrderBy(vm => vm.Name)
             .Select(vm => new VirtualMachineDto(
                 vm.Id,
                 vm.Name,
-                vm.Host,
+                vm.HyperVHostId,
+                vm.HyperVHost.Name,
+                vm.ExternalId,
                 vm.State,
                 vm.CpuCount,
                 vm.MemoryBytes,
