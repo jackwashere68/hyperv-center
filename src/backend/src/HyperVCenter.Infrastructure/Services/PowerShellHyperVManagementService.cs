@@ -87,17 +87,17 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
                     ControllerNumber = $_.ControllerNumber
                     ControllerLocation = $_.ControllerLocation
                     Path = $_.Path
-                    VhdFormat = if ($vhd) {{ $vhd.VhdFormat.ToString() }} else {{ 'Unknown' }}
-                    VhdType = if ($vhd) {{ $vhd.VhdType.ToString() }} else {{ 'Unknown' }}
-                    CurrentSize = if ($vhd) {{ $vhd.FileSize }} else {{ 0 }}
-                    MaxSize = if ($vhd) {{ $vhd.Size }} else {{ 0 }}
+                    VhdFormat = $(if ($vhd) {{ $vhd.VhdFormat.ToString() }} else {{ 'Unknown' }})
+                    VhdType = $(if ($vhd) {{ $vhd.VhdType.ToString() }} else {{ 'Unknown' }})
+                    CurrentSize = $(if ($vhd) {{ $vhd.FileSize }} else {{ 0 }})
+                    MaxSize = $(if ($vhd) {{ $vhd.Size }} else {{ 0 }})
                 }}
             }})
 
             $nics = @($vm | Get-VMNetworkAdapter | ForEach-Object {{
                 [PSCustomObject]@{{
                     Name = $_.Name
-                    SwitchName = $_.SwitchName
+                    SwitchName = if ($_.SwitchName) {{ $_.SwitchName }} else {{ '' }}
                     MacAddress = $_.MacAddress
                     IpAddresses = @($_.IPAddresses)
                 }}
