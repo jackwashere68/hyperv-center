@@ -9,6 +9,8 @@ import { VirtualMachine } from '@core/models/virtual-machine.model';
 import { VmHardwareInfo } from '@core/models/vm-hardware.model';
 import { VmStatePipe } from '@shared/pipes/vm-state.pipe';
 import { BytesPipe } from '@shared/pipes/bytes.pipe';
+import { UptimePipe } from '@shared/pipes/uptime.pipe';
+import { MacAddressPipe } from '@shared/pipes/mac-address.pipe';
 import { VirtualMachinesService } from '../../services/virtual-machines.service';
 
 @Component({
@@ -23,6 +25,8 @@ import { VirtualMachinesService } from '../../services/virtual-machines.service'
     MatProgressSpinnerModule,
     VmStatePipe,
     BytesPipe,
+    UptimePipe,
+    MacAddressPipe,
   ],
 })
 export class VmPropertiesDialogComponent implements OnInit {
@@ -33,7 +37,7 @@ export class VmPropertiesDialogComponent implements OnInit {
   readonly loading = signal(true);
   readonly error = signal<string | null>(null);
 
-  readonly diskColumns = ['controller', 'location', 'path', 'format', 'type', 'currentSize', 'maxSize'];
+  readonly diskColumns = ['path', 'controller', 'format', 'currentSize', 'maxSize'];
   readonly nicColumns = ['name', 'switch', 'macAddress', 'ipAddresses'];
   readonly snapshotColumns = ['name', 'creationTime', 'parent'];
 

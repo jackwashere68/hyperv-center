@@ -62,11 +62,11 @@
           </div>
           <div>
             <div class="text-sm text-gray-500">Uptime</div>
-            <div>{{ hw.uptime }}</div>
+            <div>{{ hw.uptime | uptime }}</div>
           </div>
           <div>
-            <div class="text-sm text-gray-500">Path</div>
-            <div class="break-all">{{ hw.path }}</div>
+            <div class="text-sm text-gray-500">Checkpoint Type</div>
+            <div>{{ hw.checkpointType }}</div>
           </div>
           <div>
             <div class="text-sm text-gray-500">Start Action</div>
@@ -76,13 +76,13 @@
             <div class="text-sm text-gray-500">Stop Action</div>
             <div>{{ hw.automaticStopAction }}</div>
           </div>
-          <div>
-            <div class="text-sm text-gray-500">Checkpoint Type</div>
-            <div>{{ hw.checkpointType }}</div>
+          <div class="col-span-2">
+            <div class="text-sm text-gray-500">Path</div>
+            <div class="break-all text-sm">{{ hw.path }}</div>
           </div>
           <div class="col-span-2">
             <div class="text-sm text-gray-500">Notes</div>
-            <div>{{ hw.notes ?? '—' }}</div>
+            <div>{{ hw.notes || '—' }}</div>
           </div>
           <div>
             <div class="text-sm text-gray-500">Created</div>
@@ -128,38 +128,30 @@
       </mat-tab>
 
       <!-- Disks Tab -->
-      <mat-tab label="Disks">
+      <mat-tab label="Disks ({{ hw.disks.length }})">
         <div class="pt-4">
           @if (hw.disks.length === 0) {
             <div class="text-gray-500">No disks attached</div>
           } @else {
             <table mat-table [dataSource]="hw.disks" class="w-full">
-              <ng-container matColumnDef="controller">
-                <th mat-header-cell *matHeaderCellDef>Controller</th>
-                <td mat-cell *matCellDef="let disk">{{ disk.controllerType }}</td>
-              </ng-container>
-              <ng-container matColumnDef="location">
-                <th mat-header-cell *matHeaderCellDef>Location</th>
-                <td mat-cell *matCellDef="let disk">{{ disk.controllerNumber }}:{{ disk.controllerLocation }}</td>
-              </ng-container>
               <ng-container matColumnDef="path">
                 <th mat-header-cell *matHeaderCellDef>Path</th>
-                <td mat-cell *matCellDef="let disk" class="break-all">{{ disk.path }}</td>
+                <td mat-cell *matCellDef="let disk" class="break-all !text-xs !max-w-[280px]">{{ disk.path }}</td>
+              </ng-container>
+              <ng-container matColumnDef="controller">
+                <th mat-header-cell *matHeaderCellDef>Bus</th>
+                <td mat-cell *matCellDef="let disk">{{ disk.controllerType }} {{ disk.controllerNumber }}:{{ disk.controllerLocation }}</td>
               </ng-container>
               <ng-container matColumnDef="format">
                 <th mat-header-cell *matHeaderCellDef>Format</th>
-                <td mat-cell *matCellDef="let disk">{{ disk.vhdFormat }}</td>
-              </ng-container>
-              <ng-container matColumnDef="type">
-                <th mat-header-cell *matHeaderCellDef>Type</th>
-                <td mat-cell *matCellDef="let disk">{{ disk.vhdType }}</td>
+                <td mat-cell *matCellDef="let disk">{{ disk.vhdFormat }} / {{ disk.vhdType }}</td>
               </ng-container>
               <ng-container matColumnDef="currentSize">
-                <th mat-header-cell *matHeaderCellDef>Current Size</th>
+                <th mat-header-cell *matHeaderCellDef>Size</th>
                 <td mat-cell *matCellDef="let disk">{{ disk.currentSize | bytes }}</td>
               </ng-container>
               <ng-container matColumnDef="maxSize">
-                <th mat-header-cell *matHeaderCellDef>Max Size</th>
+                <th mat-header-cell *matHeaderCellDef>Max</th>
                 <td mat-cell *matCellDef="let disk">{{ disk.maxSize | bytes }}</td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="diskColumns"></tr>
@@ -170,7 +162,7 @@
       </mat-tab>
 
       <!-- Network Tab -->
-      <mat-tab label="Network">
+      <mat-tab label="Network ({{ hw.networkAdapters.length }})">
         <div class="pt-4">
           @if (hw.networkAdapters.length === 0) {
             <div class="text-gray-500">No network adapters</div>
@@ -186,11 +178,17 @@
               </ng-container>
               <ng-container matColumnDef="macAddress">
                 <th mat-header-cell *matHeaderCellDef>MAC Address</th>
-                <td mat-cell *matCellDef="let nic">{{ nic.macAddress }}</td>
+                <td mat-cell *matCellDef="let nic" class="!font-mono !text-xs">{{ nic.macAddress | macAddress }}</td>
               </ng-container>
               <ng-container matColumnDef="ipAddresses">
                 <th mat-header-cell *matHeaderCellDef>IP Addresses</th>
-                <td mat-cell *matCellDef="let nic">{{ nic.ipAddresses.join(', ') || '—' }}</td>
+                <td mat-cell *matCellDef="let nic" class="!text-xs">
+                  @for (ip of nic.ipAddresses; track ip) {
+                    <div>{{ ip }}</div>
+                  } @empty {
+                    —
+                  }
+                </td>
               </ng-container>
               <tr mat-header-row *matHeaderRowDef="nicColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: nicColumns"></tr>
@@ -200,7 +198,7 @@
       </mat-tab>
 
       <!-- Snapshots Tab -->
-      <mat-tab label="Snapshots">
+      <mat-tab label="Snapshots ({{ hw.snapshots.length }})">
         <div class="pt-4">
           @if (hw.snapshots.length === 0) {
             <div class="text-gray-500">No snapshots</div>
