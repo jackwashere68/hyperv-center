@@ -79,7 +79,9 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
         var results = await RunRemoteAsync(hostname, username, password, $@"
             $vm = Get-VM -Id '{vmId}'
 
-            $disks = @($vm | Get-VMHardDiskDrive | ForEach-Object {{
+            $vmName = $vm.Name
+
+            $disks = @(Get-VMHardDiskDrive -VMName $vmName | ForEach-Object {{
                 $vhd = $null
                 try {{ $vhd = Get-VHD -Path $_.Path -ErrorAction SilentlyContinue }} catch {{}}
                 [PSCustomObject]@{{
@@ -89,21 +91,21 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
                     Path = $_.Path
                     VhdFormat = $(if ($vhd) {{ $vhd.VhdFormat.ToString() }} else {{ 'Unknown' }})
                     VhdType = $(if ($vhd) {{ $vhd.VhdType.ToString() }} else {{ 'Unknown' }})
-                    CurrentSize = $(if ($vhd) {{ $vhd.FileSize }} else {{ 0 }})
-                    MaxSize = $(if ($vhd) {{ $vhd.Size }} else {{ 0 }})
+                    CurrentSize = $(if ($vhd) {{ [long]$vhd.FileSize }} else {{ [long]0 }})
+                    MaxSize = $(if ($vhd) {{ [long]$vhd.Size }} else {{ [long]0 }})
                 }}
             }})
 
-            $nics = @($vm | Get-VMNetworkAdapter | ForEach-Object {{
+            $nics = @(Get-VMNetworkAdapter -VMName $vmName | ForEach-Object {{
                 [PSCustomObject]@{{
                     Name = $_.Name
-                    SwitchName = if ($_.SwitchName) {{ $_.SwitchName }} else {{ '' }}
+                    SwitchName = $(if ($_.SwitchName) {{ $_.SwitchName }} else {{ '' }})
                     MacAddress = $_.MacAddress
                     IpAddresses = @($_.IPAddresses)
                 }}
             }})
 
-            $snapshots = @($vm | Get-VMSnapshot -ErrorAction SilentlyContinue | ForEach-Object {{
+            $snapshots = @(Get-VMSnapshot -VMName $vmName -ErrorAction SilentlyContinue | ForEach-Object {{
                 [PSCustomObject]@{{
                     Id = $_.Id
                     Name = $_.Name
