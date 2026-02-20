@@ -79,7 +79,7 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
         var results = await RunRemoteAsync(hostname, username, password, $@"
             $vm = Get-VM -Id '{vmId}'
 
-            $disks = @(Get-VMHardDiskDrive -VM $vm | ForEach-Object {{
+            $disks = @($vm | Get-VMHardDiskDrive | ForEach-Object {{
                 $vhd = $null
                 try {{ $vhd = Get-VHD -Path $_.Path -ErrorAction SilentlyContinue }} catch {{}}
                 [PSCustomObject]@{{
@@ -94,7 +94,7 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
                 }}
             }})
 
-            $nics = @(Get-VMNetworkAdapter -VM $vm | ForEach-Object {{
+            $nics = @($vm | Get-VMNetworkAdapter | ForEach-Object {{
                 [PSCustomObject]@{{
                     Name = $_.Name
                     SwitchName = $_.SwitchName
@@ -103,7 +103,7 @@ public class PowerShellHyperVManagementService : IHyperVManagementService
                 }}
             }})
 
-            $snapshots = @(Get-VMSnapshot -VM $vm -ErrorAction SilentlyContinue | ForEach-Object {{
+            $snapshots = @($vm | Get-VMSnapshot -ErrorAction SilentlyContinue | ForEach-Object {{
                 [PSCustomObject]@{{
                     Id = $_.Id
                     Name = $_.Name
