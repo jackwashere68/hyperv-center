@@ -3,56 +3,56 @@
 <mat-dialog-content>
   <div class="grid grid-cols-2 gap-4">
     <div>
-      <div class="text-sm text-gray-500">Name</div>
-      <div>{{ data.name }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Name</div>
+      <div class="text-sm text-text-primary">{{ data.name }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Hostname</div>
-      <div>{{ data.hostname }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Hostname</div>
+      <div class="text-sm text-text-primary">{{ data.hostname }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Credential</div>
-      <div>{{ data.credentialName }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Credential</div>
+      <div class="text-sm text-text-primary">{{ data.credentialName }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Status</div>
-      <div>{{ data.status | hostStatus }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Status</div>
+      <div class="text-sm text-text-primary">{{ data.status | hostStatus }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Cluster</div>
-      <div>{{ data.clusterName ?? '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Cluster</div>
+      <div class="text-sm text-text-primary">{{ data.clusterName ?? '—' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">OS Version</div>
-      <div>{{ data.osVersion ?? '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">OS Version</div>
+      <div class="text-sm text-text-primary">{{ data.osVersion ?? '—' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Processors</div>
-      <div>{{ data.processorCount ?? '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Processors</div>
+      <div class="text-sm text-text-primary">{{ data.processorCount ?? '—' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Total Memory</div>
-      <div>{{ data.totalMemoryBytes ? (data.totalMemoryBytes | bytes) : '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Total Memory</div>
+      <div class="text-sm text-text-primary">{{ data.totalMemoryBytes ? (data.totalMemoryBytes | bytes) : '—' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Last Synced</div>
-      <div>{{ data.lastSyncedAt ? (data.lastSyncedAt | date: 'medium') : '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Last Synced</div>
+      <div class="text-sm text-text-primary">{{ data.lastSyncedAt ? (data.lastSyncedAt | date: 'medium') : '—' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Sync Error</div>
-      <div>{{ data.lastSyncError ?? '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Sync Error</div>
+      <div class="text-sm" [class]="data.lastSyncError ? 'text-error' : 'text-text-primary'">{{ data.lastSyncError ?? '—' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Notes</div>
-      <div>{{ data.notes ?? '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Notes</div>
+      <div class="text-sm text-text-primary">{{ data.notes ?? '—' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Created</div>
-      <div>{{ data.createdAt | date: 'medium' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Created</div>
+      <div class="text-sm text-text-primary">{{ data.createdAt | date: 'medium' }}</div>
     </div>
     <div>
-      <div class="text-sm text-gray-500">Updated</div>
-      <div>{{ data.updatedAt ? (data.updatedAt | date: 'medium') : '—' }}</div>
+      <div class="text-xs text-text-muted mb-0.5">Updated</div>
+      <div class="text-sm text-text-primary">{{ data.updatedAt ? (data.updatedAt | date: 'medium') : '—' }}</div>
     </div>
   </div>
 </mat-dialog-content>

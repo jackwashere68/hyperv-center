@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { HostsStore } from '../../store/hosts.store';
 import { HyperVHost, HostStatus } from '@core/models/hyperv-host.model';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { StatusBadgeComponent, StatusVariant } from '@shared/components/status-badge/status-badge.component';
 import { HostStatusPipe } from '@shared/pipes/host-status.pipe';
 import {
   ConfirmDialogComponent,
@@ -31,6 +32,7 @@ import { HostPropertiesDialogComponent } from '../host-properties-dialog/host-pr
     MatProgressSpinnerModule,
     MatTooltipModule,
     PageHeaderComponent,
+    StatusBadgeComponent,
     HostStatusPipe,
   ],
 })
@@ -48,17 +50,16 @@ export class HostListComponent {
     'actions',
   ];
 
-  readonly statusColors: Record<HostStatus, string> = {
-    [HostStatus.Unknown]: 'bg-gray-200 text-gray-800',
-    [HostStatus.Online]: 'bg-green-100 text-green-800',
-    [HostStatus.Offline]: 'bg-red-100 text-red-800',
-    [HostStatus.Error]: 'bg-yellow-100 text-yellow-800',
-  };
-
   readonly syncingHosts = new Set<string>();
 
-  statusColor(status: HostStatus): string {
-    return this.statusColors[status] ?? '';
+  statusVariant(status: HostStatus): StatusVariant {
+    const map: Record<HostStatus, StatusVariant> = {
+      [HostStatus.Unknown]: 'muted',
+      [HostStatus.Online]: 'success',
+      [HostStatus.Offline]: 'error',
+      [HostStatus.Error]: 'warning',
+    };
+    return map[status] ?? 'muted';
   }
 
   openCreateDialog(): void {

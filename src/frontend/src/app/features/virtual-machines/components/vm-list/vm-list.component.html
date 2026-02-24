@@ -1,6 +1,9 @@
-<app-page-header title="Virtual Machines">
-  <button mat-flat-button color="primary" (click)="openCreateDialog()">
-    <mat-icon>add</mat-icon>
+<app-page-header title="Virtual Machines" [subtitle]="subtitle()">
+  <button
+    (click)="openCreateDialog()"
+    class="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-bg-base hover:bg-accent/90 transition-colors"
+  >
+    <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">add</mat-icon>
     Create VM
   </button>
 </app-page-header>
@@ -9,119 +12,226 @@
   <mat-progress-bar mode="indeterminate" />
 }
 
+<!-- Toolbar: Search + Filters + View Toggle -->
+@if (store.vmEntities().length > 0 || searchQuery() || stateFilter() !== 'all') {
+  <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-5">
+    <!-- Search -->
+    <div class="relative flex-1 max-w-sm">
+      <mat-icon class="absolute left-3 top-1/2 -translate-y-1/2 !text-[18px] text-text-muted">search</mat-icon>
+      <input
+        type="text"
+        placeholder="Search VMs..."
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        class="w-full rounded-lg border border-border bg-bg-surface pl-10 pr-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent"
+      />
+    </div>
+
+    <!-- State filter chips -->
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <button
+        (click)="setStateFilter('all')"
+        class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+        [class]="stateFilter() === 'all' ? 'bg-accent/15 text-accent' : 'bg-bg-surface text-text-secondary hover:bg-bg-hover border border-border-subtle'"
+      >
+        All {{ stateCounts().all }}
+      </button>
+      @if (stateCounts()[VmState.Running] > 0) {
+        <button
+          (click)="setStateFilter(VmState.Running)"
+          class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+          [class]="stateFilter() === VmState.Running ? 'bg-success/15 text-success' : 'bg-bg-surface text-text-secondary hover:bg-bg-hover border border-border-subtle'"
+        >
+          Running {{ stateCounts()[VmState.Running] }}
+        </button>
+      }
+      @if (stateCounts()[VmState.Off] > 0) {
+        <button
+          (click)="setStateFilter(VmState.Off)"
+          class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+          [class]="stateFilter() === VmState.Off ? 'bg-bg-elevated text-text-primary' : 'bg-bg-surface text-text-secondary hover:bg-bg-hover border border-border-subtle'"
+        >
+          Off {{ stateCounts()[VmState.Off] }}
+        </button>
+      }
+      @if (stateCounts()[VmState.Paused] > 0) {
+        <button
+          (click)="setStateFilter(VmState.Paused)"
+          class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+          [class]="stateFilter() === VmState.Paused ? 'bg-warning/15 text-warning' : 'bg-bg-surface text-text-secondary hover:bg-bg-hover border border-border-subtle'"
+        >
+          Paused {{ stateCounts()[VmState.Paused] }}
+        </button>
+      }
+      @if (stateCounts()[VmState.Saved] > 0) {
+        <button
+          (click)="setStateFilter(VmState.Saved)"
+          class="rounded-full px-3 py-1 text-xs font-medium transition-colors"
+          [class]="stateFilter() === VmState.Saved ? 'bg-info/15 text-info' : 'bg-bg-surface text-text-secondary hover:bg-bg-hover border border-border-subtle'"
+        >
+          Saved {{ stateCounts()[VmState.Saved] }}
+        </button>
+      }
+    </div>
+
+    <!-- View mode toggle -->
+    <div class="flex items-center border border-border-subtle rounded-lg overflow-hidden ml-auto">
+      <button
+        (click)="viewMode.set('cards')"
+        class="p-1.5 transition-colors"
+        [class]="viewMode() === 'cards' ? 'bg-bg-hover text-accent' : 'text-text-muted hover:text-text-secondary'"
+      >
+        <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">grid_view</mat-icon>
+      </button>
+      <button
+        (click)="viewMode.set('table')"
+        class="p-1.5 transition-colors"
+        [class]="viewMode() === 'table' ? 'bg-bg-hover text-accent' : 'text-text-muted hover:text-text-secondary'"
+      >
+        <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">view_list</mat-icon>
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Empty state -->
 @if (!store.isLoading() && store.vmEntities().length === 0) {
-  <div
-    class="flex flex-col items-center justify-center py-16 text-gray-500"
-  >
-    <mat-icon class="!text-6xl !h-16 !w-16 mb-4">dns</mat-icon>
-    <p class="text-lg">No virtual machines found</p>
+  <div class="flex flex-col items-center justify-center py-16 text-text-muted">
+    <mat-icon class="!text-6xl !h-16 !w-16 mb-4 text-text-muted">computer</mat-icon>
+    <p class="text-lg text-text-secondary">No virtual machines found</p>
     <p class="text-sm">Create your first virtual machine to get started.</p>
   </div>
 }
 
-@if (store.vmEntities().length > 0) {
-  <table mat-table [dataSource]="store.vmEntities()" class="w-full">
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef>Name</th>
-      <td mat-cell *matCellDef="let vm">{{ vm.name }}</td>
-    </ng-container>
+<!-- Filtered empty state -->
+@if (!store.isLoading() && store.vmEntities().length > 0 && filteredVms().length === 0) {
+  <div class="flex flex-col items-center justify-center py-16 text-text-muted">
+    <mat-icon class="!text-6xl !h-16 !w-16 mb-4 text-text-muted">search_off</mat-icon>
+    <p class="text-lg text-text-secondary">No matching VMs</p>
+    <p class="text-sm mb-4">Try adjusting your search or filters.</p>
+    <button
+      (click)="clearFilters()"
+      class="rounded-lg border border-border px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors"
+    >
+      Clear filters
+    </button>
+  </div>
+}
 
-    <ng-container matColumnDef="hostName">
-      <th mat-header-cell *matHeaderCellDef>Host</th>
-      <td mat-cell *matCellDef="let vm">{{ vm.hostName }}</td>
-    </ng-container>
+<!-- Card view -->
+@if (filteredVms().length > 0 && viewMode() === 'cards') {
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    @for (vm of filteredVms(); track vm.id) {
+      <app-vm-card
+        [vm]="vm"
+        [actioning]="actioningVms.has(vm.id)"
+        (action)="onCardAction($event)"
+        (properties)="openProperties($event)"
+        (delete)="onCardDelete($event)"
+      />
+    }
+  </div>
+}
 
-    <ng-container matColumnDef="state">
-      <th mat-header-cell *matHeaderCellDef>State</th>
-      <td mat-cell *matCellDef="let vm">
-        <span
-          class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-          [class]="stateColor(vm.state)"
-        >
-          @if (isTransitional(vm.state)) {
-            <mat-spinner diameter="12" class="mr-1"></mat-spinner>
+<!-- Table view -->
+@if (filteredVms().length > 0 && viewMode() === 'table') {
+  <div class="rounded-xl border border-border-subtle overflow-hidden">
+    <table mat-table [dataSource]="filteredVms()" class="w-full">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Name</th>
+        <td mat-cell *matCellDef="let vm">
+          <span class="font-medium">{{ vm.name }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="hostName">
+        <th mat-header-cell *matHeaderCellDef>Host</th>
+        <td mat-cell *matCellDef="let vm">{{ vm.hostName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="state">
+        <th mat-header-cell *matHeaderCellDef>State</th>
+        <td mat-cell *matCellDef="let vm">
+          <app-status-badge
+            [label]="vm.state | vmState"
+            [variant]="stateVariant(vm.state)"
+            [pulse]="vm.state === VmState.Running"
+          />
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="cpuCount">
+        <th mat-header-cell *matHeaderCellDef>vCPUs</th>
+        <td mat-cell *matCellDef="let vm">{{ vm.cpuCount }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="memoryBytes">
+        <th mat-header-cell *matHeaderCellDef>Memory</th>
+        <td mat-cell *matCellDef="let vm">{{ vm.memoryBytes | bytes }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let vm">
+          @if (actioningVms.has(vm.id)) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <button
+              mat-icon-button
+              matTooltip="Start"
+              [disabled]="isTransitional(vm.state) || vm.state === VmState.Running"
+              (click)="performAction(vm.id, 'start')"
+            >
+              <mat-icon>play_arrow</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              matTooltip="Stop"
+              [disabled]="isTransitional(vm.state) || vm.state === VmState.Off"
+              (click)="performAction(vm.id, 'stop')"
+            >
+              <mat-icon>stop</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              matTooltip="Restart"
+              [disabled]="vm.state !== VmState.Running"
+              (click)="performAction(vm.id, 'restart')"
+            >
+              <mat-icon>restart_alt</mat-icon>
+            </button>
+            @if (canConsole(vm) && vm.externalId) {
+              <a
+                mat-icon-button
+                matTooltip="Console"
+                [routerLink]="['/virtual-machines', vm.id, 'console']"
+                [queryParams]="{ name: vm.name }"
+                class="!text-accent"
+              >
+                <mat-icon>desktop_windows</mat-icon>
+              </a>
+            }
+            <button
+              mat-icon-button
+              (click)="openProperties(vm)"
+              matTooltip="Properties"
+            >
+              <mat-icon>info_outline</mat-icon>
+            </button>
+            <button
+              mat-icon-button
+              color="warn"
+              matTooltip="Delete"
+              (click)="deleteVm(vm.id, vm.name)"
+            >
+              <mat-icon>delete_outline</mat-icon>
+            </button>
           }
-          {{ vm.state | vmState }}
-        </span>
-      </td>
-    </ng-container>
+        </td>
+      </ng-container>
 
-    <ng-container matColumnDef="cpuCount">
-      <th mat-header-cell *matHeaderCellDef>CPUs</th>
-      <td mat-cell *matCellDef="let vm">{{ vm.cpuCount }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="memoryBytes">
-      <th mat-header-cell *matHeaderCellDef>Memory</th>
-      <td mat-cell *matCellDef="let vm">{{ vm.memoryBytes | bytes }}</td>
-    </ng-container>
-
-    <ng-container matColumnDef="actions">
-      <th mat-header-cell *matHeaderCellDef>Actions</th>
-      <td mat-cell *matCellDef="let vm">
-        @if (actioningVms.has(vm.id)) {
-          <mat-spinner diameter="20"></mat-spinner>
-        } @else {
-          <button
-            mat-icon-button
-            matTooltip="Start"
-            [disabled]="isTransitional(vm.state) || vm.state === VmState.Running"
-            (click)="performAction(vm.id, 'start')"
-          >
-            <mat-icon>play_arrow</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            matTooltip="Stop"
-            [disabled]="isTransitional(vm.state) || vm.state === VmState.Off"
-            (click)="performAction(vm.id, 'stop')"
-          >
-            <mat-icon>stop</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            matTooltip="Pause"
-            [disabled]="vm.state !== VmState.Running"
-            (click)="performAction(vm.id, 'pause')"
-          >
-            <mat-icon>pause</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            matTooltip="Save"
-            [disabled]="vm.state !== VmState.Running && vm.state !== VmState.Paused"
-            (click)="performAction(vm.id, 'save')"
-          >
-            <mat-icon>save</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            matTooltip="Restart"
-            [disabled]="vm.state !== VmState.Running"
-            (click)="performAction(vm.id, 'restart')"
-          >
-            <mat-icon>restart_alt</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            (click)="openProperties(vm)"
-            matTooltip="Properties"
-          >
-            <mat-icon>info</mat-icon>
-          </button>
-          <button
-            mat-icon-button
-            color="warn"
-            matTooltip="Delete"
-            (click)="deleteVm(vm.id, vm.name)"
-          >
-            <mat-icon>delete</mat-icon>
-          </button>
-        }
-      </td>
-    </ng-container>
-
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-  </table>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </div>
 }

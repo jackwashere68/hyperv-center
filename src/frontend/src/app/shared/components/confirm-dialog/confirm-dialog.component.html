@@ -1,12 +1,15 @@
-<h2 mat-dialog-title>{{ data.title }}</h2>
+<h2 mat-dialog-title class="text-text-primary">{{ data.title }}</h2>
 
 <mat-dialog-content>
-  <p>{{ data.message }}</p>
+  <p class="text-text-secondary">{{ data.message }}</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-button mat-dialog-close>{{ data.cancelText || 'Cancel' }}</button>
-  <button mat-flat-button color="warn" (click)="onConfirm()">
+  <button
+    (click)="onConfirm()"
+    class="inline-flex items-center rounded-lg bg-error px-4 py-2 text-sm font-medium text-white hover:bg-error/90 transition-colors"
+  >
     {{ data.confirmText || 'Delete' }}
   </button>
 </mat-dialog-actions>

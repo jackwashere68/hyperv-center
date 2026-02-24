@@ -5,10 +5,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatCardModule } from '@angular/material/card';
 import { ClustersService } from '../../services/clusters.service';
 import { ClusterDetail, ClusterStatus } from '@core/models/cluster.model';
 import { HostStatus } from '@core/models/hyperv-host.model';
+import { StatusBadgeComponent, StatusVariant } from '@shared/components/status-badge/status-badge.component';
 import { ClusterStatusPipe } from '@shared/pipes/cluster-status.pipe';
 import { HostStatusPipe } from '@shared/pipes/host-status.pipe';
 import { firstValueFrom } from 'rxjs';
@@ -22,7 +22,7 @@ import { firstValueFrom } from 'rxjs';
     MatButtonModule,
     MatIconModule,
     MatProgressBarModule,
-    MatCardModule,
+    StatusBadgeComponent,
     ClusterStatusPipe,
     HostStatusPipe,
   ],
@@ -37,27 +37,25 @@ export class ClusterDetailComponent implements OnInit {
 
   readonly nodeColumns = ['name', 'hostname', 'credentialName', 'status', 'createdAt'];
 
-  readonly clusterStatusColors: Record<ClusterStatus, string> = {
-    [ClusterStatus.Unknown]: 'bg-gray-200 text-gray-800',
-    [ClusterStatus.Online]: 'bg-green-100 text-green-800',
-    [ClusterStatus.Degraded]: 'bg-yellow-100 text-yellow-800',
-    [ClusterStatus.Offline]: 'bg-red-100 text-red-800',
-    [ClusterStatus.Error]: 'bg-red-200 text-red-900',
-  };
-
-  readonly hostStatusColors: Record<HostStatus, string> = {
-    [HostStatus.Unknown]: 'bg-gray-200 text-gray-800',
-    [HostStatus.Online]: 'bg-green-100 text-green-800',
-    [HostStatus.Offline]: 'bg-red-100 text-red-800',
-    [HostStatus.Error]: 'bg-yellow-100 text-yellow-800',
-  };
-
-  clusterStatusColor(status: ClusterStatus): string {
-    return this.clusterStatusColors[status] ?? '';
+  clusterStatusVariant(status: ClusterStatus): StatusVariant {
+    const map: Record<ClusterStatus, StatusVariant> = {
+      [ClusterStatus.Unknown]: 'muted',
+      [ClusterStatus.Online]: 'success',
+      [ClusterStatus.Degraded]: 'warning',
+      [ClusterStatus.Offline]: 'error',
+      [ClusterStatus.Error]: 'error',
+    };
+    return map[status] ?? 'muted';
   }
 
-  hostStatusColor(status: HostStatus): string {
-    return this.hostStatusColors[status] ?? '';
+  hostStatusVariant(status: HostStatus): StatusVariant {
+    const map: Record<HostStatus, StatusVariant> = {
+      [HostStatus.Unknown]: 'muted',
+      [HostStatus.Online]: 'success',
+      [HostStatus.Offline]: 'error',
+      [HostStatus.Error]: 'warning',
+    };
+    return map[status] ?? 'muted';
   }
 
   async ngOnInit(): Promise<void> {

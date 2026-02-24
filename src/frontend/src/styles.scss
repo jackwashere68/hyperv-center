@@ -1,0 +1,217 @@
+@use './styles/theme';
+@import 'tailwindcss';
+
+/* ── Tailwind theme tokens ──────────────────────────────────── */
+@theme {
+  --color-bg-base: #0a0a0f;
+  --color-bg-surface: #111118;
+  --color-bg-elevated: #1a1a24;
+  --color-bg-hover: #22222e;
+
+  --color-border: #2a2a3a;
+  --color-border-subtle: #1e1e2e;
+
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #9898b0;
+  --color-text-muted: #5a5a78;
+
+  --color-accent: #22d3ee;
+  --color-accent-dim: #22d3ee33;
+  --color-success: #34d399;
+  --color-warning: #fbbf24;
+  --color-error: #f87171;
+  --color-info: #60a5fa;
+}
+
+/* ── Base ────────────────────────────────────────────────────── */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Custom scrollbars ───────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ── Status dot pulse animation ──────────────────────────────── */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+.animate-pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* ── Material overrides (dark) ───────────────────────────────── */
+
+/* Dialog */
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  background: var(--color-bg-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+}
+
+.mat-mdc-dialog-title {
+  color: var(--color-text-primary) !important;
+}
+
+.mat-mdc-dialog-content {
+  color: var(--color-text-secondary) !important;
+}
+
+/* Tables */
+.mat-mdc-table {
+  background: transparent !important;
+}
+
+.mat-mdc-header-row {
+  background: var(--color-bg-surface) !important;
+}
+
+.mat-mdc-header-cell {
+  color: var(--color-text-muted) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  border-bottom-color: var(--color-border) !important;
+}
+
+.mat-mdc-row {
+  background: transparent !important;
+  transition: background-color 0.15s ease;
+}
+
+.mat-mdc-row:hover {
+  background: var(--color-bg-hover) !important;
+}
+
+.mat-mdc-cell {
+  color: var(--color-text-primary) !important;
+  border-bottom-color: var(--color-border-subtle) !important;
+}
+
+/* Form fields */
+.mat-mdc-form-field .mdc-text-field--filled {
+  background: var(--color-bg-surface) !important;
+  border-radius: 8px 8px 0 0;
+}
+
+.mat-mdc-form-field .mdc-floating-label {
+  color: var(--color-text-muted) !important;
+}
+
+.mat-mdc-form-field .mdc-text-field--filled:not(.mdc-text-field--disabled) .mdc-line-ripple::before {
+  border-bottom-color: var(--color-border) !important;
+}
+
+.mat-mdc-form-field .mat-mdc-input-element {
+  color: var(--color-text-primary) !important;
+}
+
+.mat-mdc-form-field .mat-mdc-select-value-text {
+  color: var(--color-text-primary) !important;
+}
+
+/* Tabs */
+.mat-mdc-tab-group .mat-mdc-tab:not(.mat-mdc-tab-disabled) .mdc-tab__text-label {
+  color: var(--color-text-secondary);
+}
+
+.mat-mdc-tab-group .mat-mdc-tab:not(.mat-mdc-tab-disabled).mdc-tab--active .mdc-tab__text-label {
+  color: var(--color-accent);
+}
+
+.mat-mdc-tab-group .mat-mdc-tab-header {
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* Progress bar */
+.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--color-accent);
+  --mdc-linear-progress-track-color: var(--color-bg-surface);
+}
+
+/* Chips */
+.mat-mdc-chip {
+  background: var(--color-bg-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+/* Cards */
+.mat-mdc-card {
+  background: var(--color-bg-surface) !important;
+  border: 1px solid var(--color-border-subtle) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+
+/* Tooltip */
+.mat-mdc-tooltip .mdc-tooltip__surface {
+  background: var(--color-bg-elevated) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+/* Select panel */
+.mat-mdc-select-panel {
+  background: var(--color-bg-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.mat-mdc-option {
+  color: var(--color-text-primary) !important;
+}
+
+.mat-mdc-option:hover:not(.mdc-list-item--disabled) {
+  background: var(--color-bg-hover) !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected:not(.mdc-list-item--disabled) {
+  background: var(--color-accent-dim) !important;
+}
+
+/* Buttons */
+.mat-mdc-icon-button {
+  color: var(--color-text-secondary) !important;
+}
+
+.mat-mdc-icon-button:hover {
+  color: var(--color-text-primary) !important;
+}
+
+.mat-mdc-icon-button[color='warn'],
+.mat-mdc-icon-button.mat-warn {
+  color: var(--color-error) !important;
+}
+
+.mat-mdc-button {
+  color: var(--color-text-secondary) !important;
+}
+
+/* List */
+.mat-mdc-list-item {
+  color: var(--color-text-primary) !important;
+}

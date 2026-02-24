@@ -9,6 +9,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ClustersStore } from '../../store/clusters.store';
 import { Cluster, ClusterStatus } from '@core/models/cluster.model';
 import { PageHeaderComponent } from '@shared/components/page-header/page-header.component';
+import { StatusBadgeComponent, StatusVariant } from '@shared/components/status-badge/status-badge.component';
 import { ClusterStatusPipe } from '@shared/pipes/cluster-status.pipe';
 import {
   ConfirmDialogComponent,
@@ -27,6 +28,7 @@ import { ClusterEditDialogComponent } from '../cluster-edit-dialog/cluster-edit-
     MatIconModule,
     MatProgressBarModule,
     PageHeaderComponent,
+    StatusBadgeComponent,
     ClusterStatusPipe,
   ],
 })
@@ -44,16 +46,15 @@ export class ClusterListComponent {
     'actions',
   ];
 
-  readonly statusColors: Record<ClusterStatus, string> = {
-    [ClusterStatus.Unknown]: 'bg-gray-200 text-gray-800',
-    [ClusterStatus.Online]: 'bg-green-100 text-green-800',
-    [ClusterStatus.Degraded]: 'bg-yellow-100 text-yellow-800',
-    [ClusterStatus.Offline]: 'bg-red-100 text-red-800',
-    [ClusterStatus.Error]: 'bg-red-200 text-red-900',
-  };
-
-  statusColor(status: ClusterStatus): string {
-    return this.statusColors[status] ?? '';
+  statusVariant(status: ClusterStatus): StatusVariant {
+    const map: Record<ClusterStatus, StatusVariant> = {
+      [ClusterStatus.Unknown]: 'muted',
+      [ClusterStatus.Online]: 'success',
+      [ClusterStatus.Degraded]: 'warning',
+      [ClusterStatus.Offline]: 'error',
+      [ClusterStatus.Error]: 'error',
+    };
+    return map[status] ?? 'muted';
   }
 
   openCreateDialog(): void {

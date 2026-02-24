@@ -1,48 +1,143 @@
-<mat-sidenav-container class="h-full">
-  <mat-sidenav mode="side" opened class="w-60">
-    <mat-toolbar color="primary">
-      <span>{{ title }}</span>
-    </mat-toolbar>
-    <mat-nav-list>
+<div class="flex h-full bg-bg-base">
+  <!-- Sidebar -->
+  <aside
+    class="flex flex-col border-r border-border bg-bg-surface transition-all duration-200 shrink-0"
+    [class.w-60]="!sidebarCollapsed()"
+    [class.w-16]="sidebarCollapsed()"
+  >
+    <!-- Logo area -->
+    <div class="flex items-center gap-3 px-4 h-14 border-b border-border-subtle shrink-0">
+      <mat-icon class="text-accent !text-[22px]">memory</mat-icon>
+      @if (!sidebarCollapsed()) {
+        <span class="text-sm font-semibold text-text-primary tracking-tight whitespace-nowrap">HyperV Center</span>
+      }
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-1">
+      <!-- Dashboard -->
       <a
-        mat-list-item
+        routerLink="/dashboard"
+        routerLinkActive="bg-bg-hover text-accent"
+        class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+        [matTooltip]="sidebarCollapsed() ? 'Dashboard' : ''"
+        matTooltipPosition="right"
+      >
+        <mat-icon class="!text-[20px] !w-5 !h-5 shrink-0">dashboard</mat-icon>
+        @if (!sidebarCollapsed()) {
+          <span class="truncate">Dashboard</span>
+        }
+      </a>
+
+      <!-- Section: Infrastructure -->
+      @if (!sidebarCollapsed()) {
+        <div class="pt-4 pb-1 px-3 text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+          Infrastructure
+        </div>
+      } @else {
+        <div class="my-2 mx-3 border-t border-border-subtle"></div>
+      }
+
+      <a
         routerLink="/clusters"
-        routerLinkActive="mdc-list-item--activated"
+        routerLinkActive="bg-bg-hover text-accent"
+        class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+        [matTooltip]="sidebarCollapsed() ? 'Clusters' : ''"
+        matTooltipPosition="right"
       >
-        <mat-icon matListItemIcon>hub</mat-icon>
-        <span matListItemTitle>Clusters</span>
+        <mat-icon class="!text-[20px] !w-5 !h-5 shrink-0">hub</mat-icon>
+        @if (!sidebarCollapsed()) {
+          <span class="flex-1 truncate">Clusters</span>
+          @if (clustersStore.clusterCount() > 0) {
+            <span class="text-[11px] font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+              {{ clustersStore.clusterCount() }}
+            </span>
+          }
+        }
       </a>
+
       <a
-        mat-list-item
         routerLink="/hosts"
-        routerLinkActive="mdc-list-item--activated"
+        routerLinkActive="bg-bg-hover text-accent"
+        class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+        [matTooltip]="sidebarCollapsed() ? 'Hosts' : ''"
+        matTooltipPosition="right"
       >
-        <mat-icon matListItemIcon>dns</mat-icon>
-        <span matListItemTitle>Hosts</span>
+        <mat-icon class="!text-[20px] !w-5 !h-5 shrink-0">dns</mat-icon>
+        @if (!sidebarCollapsed()) {
+          <span class="flex-1 truncate">Hosts</span>
+          @if (hostsStore.hostCount() > 0) {
+            <span class="text-[11px] font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+              {{ hostsStore.hostCount() }}
+            </span>
+          }
+        }
       </a>
+
       <a
-        mat-list-item
         routerLink="/virtual-machines"
-        routerLinkActive="mdc-list-item--activated"
+        routerLinkActive="bg-bg-hover text-accent"
+        class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+        [matTooltip]="sidebarCollapsed() ? 'Virtual Machines' : ''"
+        matTooltipPosition="right"
       >
-        <mat-icon matListItemIcon>computer</mat-icon>
-        <span matListItemTitle>Virtual Machines</span>
+        <mat-icon class="!text-[20px] !w-5 !h-5 shrink-0">computer</mat-icon>
+        @if (!sidebarCollapsed()) {
+          <span class="flex-1 truncate">Virtual Machines</span>
+          @if (vmStore.vmCount() > 0) {
+            <span class="text-[11px] font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+              {{ vmStore.vmCount() }}
+            </span>
+          }
+        }
       </a>
-      <div class="px-4 pt-4 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-        Settings
-      </div>
+
+      <!-- Section: Settings -->
+      @if (!sidebarCollapsed()) {
+        <div class="pt-4 pb-1 px-3 text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+          Settings
+        </div>
+      } @else {
+        <div class="my-2 mx-3 border-t border-border-subtle"></div>
+      }
+
       <a
-        mat-list-item
         routerLink="/credentials"
-        routerLinkActive="mdc-list-item--activated"
-        class="!pl-8"
+        routerLinkActive="bg-bg-hover text-accent"
+        class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
+        [matTooltip]="sidebarCollapsed() ? 'Credentials' : ''"
+        matTooltipPosition="right"
       >
-        <mat-icon matListItemIcon>lock</mat-icon>
-        <span matListItemTitle>Credentials</span>
+        <mat-icon class="!text-[20px] !w-5 !h-5 shrink-0">vpn_key</mat-icon>
+        @if (!sidebarCollapsed()) {
+          <span class="flex-1 truncate">Credentials</span>
+          @if (credentialsStore.credentialCount() > 0) {
+            <span class="text-[11px] font-medium text-text-muted bg-bg-elevated rounded-full px-2 py-0.5">
+              {{ credentialsStore.credentialCount() }}
+            </span>
+          }
+        }
       </a>
-    </mat-nav-list>
-  </mat-sidenav>
-  <mat-sidenav-content class="p-6">
+    </nav>
+
+    <!-- Collapse toggle -->
+    <div class="border-t border-border-subtle p-2 shrink-0">
+      <button
+        (click)="toggleSidebar()"
+        class="flex items-center justify-center w-full rounded-lg px-3 py-2 text-text-muted hover:bg-bg-hover hover:text-text-secondary transition-colors"
+      >
+        <mat-icon class="!text-[20px] !w-5 !h-5">
+          {{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}
+        </mat-icon>
+        @if (!sidebarCollapsed()) {
+          <span class="ml-3 text-xs">Collapse</span>
+        }
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 overflow-y-auto p-6">
     <router-outlet />
-  </mat-sidenav-content>
-</mat-sidenav-container>
+  </main>
+</div>

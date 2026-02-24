@@ -1,0 +1,44 @@
+<app-page-header title="Dashboard" subtitle="Overview of your Hyper-V infrastructure" />
+
+<!-- Stat cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <app-stat-card
+    icon="computer"
+    [value]="vmStore.vmCount()"
+    title="Virtual Machines"
+    [subtitle]="vmSubtitle()"
+    color="accent"
+  />
+  <app-stat-card
+    icon="dns"
+    [value]="hostsStore.hostCount()"
+    title="Hosts"
+    [subtitle]="hostSubtitle()"
+    color="success"
+  />
+  <app-stat-card
+    icon="hub"
+    [value]="clustersStore.clusterCount()"
+    title="Clusters"
+    color="info"
+  />
+  <app-stat-card
+    icon="vpn_key"
+    [value]="credentialsStore.credentialCount()"
+    title="Credentials"
+    color="warning"
+  />
+</div>
+
+<!-- Charts row -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+  <div class="lg:col-span-2">
+    <app-vm-state-chart [vms]="vmStore.vmEntities()" />
+  </div>
+  <div>
+    <app-host-health-card [hosts]="hostsStore.hostEntities()" />
+  </div>
+</div>
+
+<!-- Recent activity -->
+<app-recent-activity [vms]="vmStore.vmEntities()" />

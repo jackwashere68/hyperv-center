@@ -1,0 +1,29 @@
+<div class="rounded-xl border border-border-subtle bg-bg-surface p-5">
+  <h3 class="text-sm font-medium text-text-primary mb-4">VM States</h3>
+
+  @if (total() === 0) {
+    <p class="text-sm text-text-muted">No virtual machines</p>
+  } @else {
+    <!-- Bar chart -->
+    <div class="flex h-3 rounded-full overflow-hidden bg-bg-elevated mb-4">
+      @for (s of stateCounts(); track s.state) {
+        <div
+          class="h-full transition-all duration-300"
+          [class]="s.color"
+          [style.width]="barWidth(s.count)"
+        ></div>
+      }
+    </div>
+
+    <!-- Legend -->
+    <div class="flex flex-wrap gap-4">
+      @for (s of stateCounts(); track s.state) {
+        <div class="flex items-center gap-2">
+          <span class="inline-block h-2 w-2 rounded-full" [class]="s.dotColor"></span>
+          <span class="text-xs text-text-secondary">{{ s.state | vmState }}</span>
+          <span class="text-xs font-medium" [class]="s.textColor">{{ s.count }}</span>
+        </div>
+      }
+    </div>
+  }
+</div>

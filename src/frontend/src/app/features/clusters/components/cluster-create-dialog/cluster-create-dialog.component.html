@@ -33,7 +33,7 @@
     </mat-form-field>
 
     <div>
-      <label class="text-sm font-medium text-gray-700 mb-1 block">Node Hostnames</label>
+      <label class="text-sm font-medium text-text-secondary mb-1 block">Node Hostnames</label>
       <div class="flex gap-2 mb-2">
         <mat-form-field class="flex-1">
           <mat-label>Hostname</mat-label>
@@ -68,7 +68,7 @@
         </mat-chip-set>
       }
       @if (nodeHostnames().length === 0) {
-        <p class="text-sm text-gray-500">Add at least one node hostname.</p>
+        <p class="text-sm text-text-muted">Add at least one node hostname.</p>
       }
     </div>
 

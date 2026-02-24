@@ -1,7 +1,8 @@
 {
   "/api": {
-    "target": "https://localhost:7001",
+    "target": "http://g3:5000",
     "secure": false,
-    "changeOrigin": true
+    "changeOrigin": true,
+    "ws": true
   }
 }

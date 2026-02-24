@@ -1,0 +1,169 @@
+<!-- Toolbar -->
+<div
+  class="flex items-center gap-2 px-4 py-2 bg-bg-surface border-b border-border"
+  [class.hidden]="isFullscreen()"
+>
+  <!-- Back button + VM name -->
+  <button
+    (click)="goBack()"
+    class="flex items-center gap-1 text-text-secondary hover:text-text-primary transition-colors mr-2"
+  >
+    <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">arrow_back</mat-icon>
+    <span class="text-sm">VMs</span>
+  </button>
+
+  <div class="h-4 w-px bg-border"></div>
+
+  <mat-icon class="!text-[18px] !w-[18px] !h-[18px] text-accent">desktop_windows</mat-icon>
+  <span class="text-sm font-medium text-text-primary truncate max-w-xs">{{ vmName() }}</span>
+
+  <div class="h-4 w-px bg-border mx-1"></div>
+
+  <!-- Connection status -->
+  <div class="flex items-center gap-1.5">
+    <div
+      class="w-2 h-2 rounded-full"
+      [class]="connectionStatusClass()"
+    ></div>
+    <span class="text-xs text-text-muted">{{ connectionStatusText() }}</span>
+  </div>
+
+  <div class="flex-1"></div>
+
+  <!-- Actions -->
+  <button
+    mat-icon-button
+    matTooltip="Send Ctrl+Alt+Del"
+    (click)="sendCtrlAltDel()"
+    [disabled]="connectionState() !== 3"
+    class="!w-8 !h-8"
+  >
+    <mat-icon class="!text-[18px]">keyboard</mat-icon>
+  </button>
+
+  <button
+    mat-icon-button
+    matTooltip="Fullscreen"
+    (click)="toggleFullscreen()"
+    [disabled]="connectionState() !== 3"
+    class="!w-8 !h-8"
+  >
+    <mat-icon class="!text-[18px]">{{ isFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}</mat-icon>
+  </button>
+
+  <button
+    mat-icon-button
+    matTooltip="Disconnect"
+    (click)="disconnect()"
+    [disabled]="connectionState() === 5 || connectionState() === 0"
+    class="!w-8 !h-8 text-error"
+  >
+    <mat-icon class="!text-[18px]">power_settings_new</mat-icon>
+  </button>
+</div>
+
+<!-- Fullscreen toolbar (appears on hover at top) -->
+@if (isFullscreen()) {
+  <div
+    class="fixed top-0 left-0 right-0 z-50 flex items-center gap-2 px-4 py-1.5 bg-bg-base/90 backdrop-blur-sm border-b border-border opacity-0 hover:opacity-100 transition-opacity duration-300"
+  >
+    <mat-icon class="!text-[16px] !w-[16px] !h-[16px] text-accent">desktop_windows</mat-icon>
+    <span class="text-xs font-medium text-text-primary">{{ vmName() }}</span>
+    <div class="flex-1"></div>
+    <button
+      mat-icon-button
+      matTooltip="Send Ctrl+Alt+Del"
+      (click)="sendCtrlAltDel()"
+      class="!w-7 !h-7"
+    >
+      <mat-icon class="!text-[16px]">keyboard</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      matTooltip="Exit Fullscreen"
+      (click)="toggleFullscreen()"
+      class="!w-7 !h-7"
+    >
+      <mat-icon class="!text-[16px]">fullscreen_exit</mat-icon>
+    </button>
+    <button
+      mat-icon-button
+      matTooltip="Disconnect"
+      (click)="disconnect()"
+      class="!w-7 !h-7 text-error"
+    >
+      <mat-icon class="!text-[16px]">power_settings_new</mat-icon>
+    </button>
+  </div>
+}
+
+<!-- Console display area -->
+<div
+  #displayContainer
+  class="flex-1 overflow-hidden bg-black relative"
+  [class.cursor-none]="connectionState() === 3"
+>
+  @if (connectionState() === 0) {
+    <!-- Idle: Ready to connect -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-text-muted z-10">
+      <mat-icon class="!text-6xl !w-16 !h-16 text-accent/50">desktop_windows</mat-icon>
+      <p class="text-text-secondary">Ready to connect</p>
+      <button
+        (click)="connect()"
+        class="inline-flex items-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-bg-base hover:bg-accent/90 transition-colors"
+      >
+        <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">play_arrow</mat-icon>
+        Connect
+      </button>
+    </div>
+  }
+
+  @if (connectionState() >= 1 && connectionState() <= 2) {
+    <!-- Connecting -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 z-10">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p class="text-text-secondary text-sm">Connecting to {{ vmName() }}...</p>
+    </div>
+  }
+
+  @if (connectionState() === 5 && errorMessage()) {
+    <!-- Error / Disconnected with error -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-text-muted max-w-md mx-auto text-center z-10">
+      <mat-icon class="!text-6xl !w-16 !h-16 text-error/50">error_outline</mat-icon>
+      <p class="text-text-secondary">Connection lost</p>
+      <p class="text-xs text-text-muted">{{ errorMessage() }}</p>
+      <button
+        (click)="connect()"
+        class="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors"
+      >
+        <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">refresh</mat-icon>
+        Reconnect
+      </button>
+    </div>
+  }
+
+  @if (connectionState() === 5 && !errorMessage()) {
+    <!-- Cleanly disconnected -->
+    <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-text-muted z-10">
+      <mat-icon class="!text-6xl !w-16 !h-16 text-text-muted/50">desktop_access_disabled</mat-icon>
+      <p class="text-text-secondary">Disconnected</p>
+      <div class="flex gap-3">
+        <button
+          (click)="connect()"
+          class="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-bg-base hover:bg-accent/90 transition-colors"
+        >
+          <mat-icon class="!text-[18px] !w-[18px] !h-[18px]">refresh</mat-icon>
+          Reconnect
+        </button>
+        <button
+          (click)="goBack()"
+          class="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-text-secondary hover:bg-bg-hover transition-colors"
+        >
+          Back to VMs
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- The Guacamole display element gets appended here programmatically -->
+</div>

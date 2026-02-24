@@ -1,0 +1,40 @@
+<div class="rounded-xl border border-border-subtle bg-bg-surface p-5">
+  <h3 class="text-sm font-medium text-text-primary mb-4">Recent Activity</h3>
+
+  @if (recentVms().length === 0) {
+    <p class="text-sm text-text-muted">No recent activity</p>
+  } @else {
+    <div class="space-y-0">
+      @for (vm of recentVms(); track vm.id) {
+        <div class="flex items-center justify-between py-2.5 border-b border-border-subtle last:border-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <span
+              class="inline-block h-2 w-2 rounded-full shrink-0"
+              [class.bg-success]="vm.state === 'Running'"
+              [class.bg-text-muted]="vm.state === 'Off'"
+              [class.bg-warning]="vm.state === 'Paused'"
+              [class.bg-info]="vm.state === 'Saved'"
+              [class.bg-accent]="vm.state === 'Starting' || vm.state === 'Resuming'"
+              [class.bg-error]="vm.state === 'Stopping'"
+              [class.animate-pulse-dot]="isRunning(vm.state)"
+            ></span>
+            <div class="min-w-0">
+              <div class="text-sm text-text-primary truncate">{{ vm.name }}</div>
+              <div class="text-xs text-text-muted">{{ vm.hostName }}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0 ml-3">
+            <app-status-badge
+              [label]="vm.state | vmState"
+              [variant]="stateVariant(vm.state)"
+              [pulse]="isRunning(vm.state)"
+            />
+            <span class="text-xs text-text-muted">
+              {{ (vm.updatedAt ?? vm.createdAt) | date: 'short' }}
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

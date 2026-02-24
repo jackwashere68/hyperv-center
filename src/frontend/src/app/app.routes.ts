@@ -2,6 +2,13 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: 'dashboard',
+    loadChildren: () =>
+      import('./features/dashboard/dashboard.routes').then(
+        (m) => m.dashboardRoutes,
+      ),
+  },
+  {
     path: 'clusters',
     loadChildren: () =>
       import('./features/clusters/clusters.routes').then(
@@ -31,7 +38,7 @@ export const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'virtual-machines',
+    redirectTo: 'dashboard',
     pathMatch: 'full',
   },
 ];

@@ -1,24 +1,27 @@
-<h2 mat-dialog-title>Cluster Detected</h2>
+<h2 mat-dialog-title class="text-text-primary">Cluster Detected</h2>
 
 <mat-dialog-content>
-  <p class="mb-4">
-    This host is part of cluster <strong>{{ data.clusterName }}</strong>
+  <p class="mb-4 text-text-secondary">
+    This host is part of cluster <strong class="text-text-primary">{{ data.clusterName }}</strong>
     with {{ data.nodeHostnames.length }} node(s):
   </p>
-  <mat-list>
+  <div class="space-y-2 mb-4">
     @for (hostname of data.nodeHostnames; track hostname) {
-      <mat-list-item>
-        <mat-icon matListItemIcon>dns</mat-icon>
-        <span matListItemTitle>{{ hostname }}</span>
-      </mat-list-item>
+      <div class="flex items-center gap-2 rounded-lg bg-bg-surface border border-border-subtle px-3 py-2">
+        <mat-icon class="!text-[18px] !w-[18px] !h-[18px] text-text-muted">dns</mat-icon>
+        <span class="text-sm text-text-primary">{{ hostname }}</span>
+      </div>
     }
-  </mat-list>
-  <p class="mt-4">Would you like to add the entire cluster instead?</p>
+  </div>
+  <p class="text-text-secondary">Would you like to add the entire cluster instead?</p>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="addHostOnly()">Add Host Only</button>
-  <button mat-flat-button color="primary" (click)="addCluster()">
+  <button
+    (click)="addCluster()"
+    class="inline-flex items-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-bg-base hover:bg-accent/90 transition-colors"
+  >
     Add Cluster
   </button>
 </mat-dialog-actions>
