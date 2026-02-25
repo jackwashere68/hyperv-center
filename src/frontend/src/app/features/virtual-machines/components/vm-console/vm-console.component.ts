@@ -398,7 +398,15 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
       document.removeEventListener('keydown', this.rawKeyDebugHandler, true);
       this.rawKeyDebugHandler = null;
     }
-    this.keyboard?.reset();
+    if (this.keyboard) {
+      // CRITICAL: Clear handlers BEFORE reset so leaked event listeners
+      // (which Guacamole.Keyboard never removes) exit early on the
+      // `if (!guac_keyboard.onkeydown) return` check and don't mark
+      // events with EVENT_MARKER, which would block any new Keyboard instance.
+      this.keyboard.onkeydown = null as any;
+      this.keyboard.onkeyup = null as any;
+      this.keyboard.reset();
+    }
     this.keyboard = null;
     this.mouse = null;
     this.resizeObserver?.disconnect();
