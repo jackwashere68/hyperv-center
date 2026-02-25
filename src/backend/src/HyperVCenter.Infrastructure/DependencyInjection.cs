@@ -26,6 +26,8 @@ public static class DependencyInjection
         var dpBuilder = services.AddDataProtection();
         if (!string.IsNullOrEmpty(keysPath))
             dpBuilder.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+        if (OperatingSystem.IsWindows())
+            dpBuilder.ProtectKeysWithDpapi(protectToLocalMachine: true);
         services.AddScoped<IEncryptionService, EncryptionService>();
         services.AddScoped<IClusterDetectionService, StubClusterDetectionService>();
 
