@@ -50,6 +50,8 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   private debugOverlay: HTMLDivElement | null = null;
   private keyDownCount = 0;
   private keyUpCount = 0;
+  private rawKeyCount = 0;
+  private rawKeyDebugHandler: ((e: KeyboardEvent) => void) | null = null;
 
   readonly connectionStatusClass = computed(() => {
     const state = this.connectionState();
@@ -292,6 +294,18 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     const display = this.client.getDisplay();
     const displayElement = display.getElement();
 
+    // Raw DOM keyboard listener — diagnostic to verify browser events fire
+    this.rawKeyCount = 0;
+    this.rawKeyDebugHandler = (e: KeyboardEvent) => {
+      this.rawKeyCount++;
+      if (this.debugOverlay) {
+        this.debugOverlay.textContent =
+          (this.debugOverlay.textContent ?? '').replace(/\nraw:.*/, '') +
+          `\nraw: ${this.rawKeyCount} key="${e.key}" code=${e.code}`;
+      }
+    };
+    document.addEventListener('keydown', this.rawKeyDebugHandler, true);
+
     // Keyboard — attach to document to capture all key events
     this.keyDownCount = 0;
     this.keyUpCount = 0;
@@ -380,6 +394,10 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private cleanup(): void {
+    if (this.rawKeyDebugHandler) {
+      document.removeEventListener('keydown', this.rawKeyDebugHandler, true);
+      this.rawKeyDebugHandler = null;
+    }
     this.keyboard?.reset();
     this.keyboard = null;
     this.mouse = null;

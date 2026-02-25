@@ -223,7 +223,7 @@ public static class VmConsoleHandler
             ["enable-drive"] = "",
             ["create-drive-path"] = "",
             ["console"] = "",
-            ["server-layout"] = "",
+            ["server-layout"] = "en-us-qwerty",
             ["timezone"] = "",
             ["client-name"] = "HyperV Center",
             ["gateway-hostname"] = "",
