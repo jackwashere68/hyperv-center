@@ -309,7 +309,7 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Raw DOM keyboard listener for debug diagnostics
     this.rawKeyCount = 0;
-    this.rawKeyDebugHandler = (e: KeyboardEvent) => {
+    this.rawKeyDebugHandler = (_e: KeyboardEvent) => {
       this.rawKeyCount++;
       this.updateDebugOverlay();
     };
