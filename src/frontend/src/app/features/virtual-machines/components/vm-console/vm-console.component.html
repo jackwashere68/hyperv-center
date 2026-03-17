@@ -33,6 +33,16 @@
   <!-- Actions -->
   <button
     mat-icon-button
+    [matTooltip]="debugMode() ? 'Hide debug overlay' : 'Show debug overlay'"
+    (click)="toggleDebug()"
+    class="!w-8 !h-8"
+    [class.text-success]="debugMode()"
+  >
+    <mat-icon class="!text-[18px]">bug_report</mat-icon>
+  </button>
+
+  <button
+    mat-icon-button
     matTooltip="Send Ctrl+Alt+Del"
     (click)="sendCtrlAltDel()"
     [disabled]="connectionState() !== 3"

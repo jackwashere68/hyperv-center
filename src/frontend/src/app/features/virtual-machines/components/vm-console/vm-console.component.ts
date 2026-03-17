@@ -41,6 +41,7 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly connectionState = signal(0); // 0=idle, 1=connecting, 2=waiting, 3=connected, 4=disconnecting, 5=disconnected
   readonly errorMessage = signal<string | null>(null);
   readonly isFullscreen = signal(false);
+  readonly debugMode = signal(false);
 
   private client: Guacamole.Client | null = null;
   private tunnel: Guacamole.WebSocketTunnel | null = null;
@@ -48,6 +49,7 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
   private mouse: Guacamole.Mouse | null = null;
   private resizeObserver: ResizeObserver | null = null;
   private debugOverlay: HTMLDivElement | null = null;
+  private debugStats = { imgCount: 0, blobCount: 0, endCount: 0, syncCount: 0, blobBytes: 0, sizeInfo: '', lastImgInfo: '' };
   private keyDownCount = 0;
   private keyUpCount = 0;
   private rawKeyCount = 0;
@@ -120,53 +122,23 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.tunnel = new Guacamole.WebSocketTunnel(wsUrl);
     this.client = new Guacamole.Client(this.tunnel);
 
-    // DEBUG: On-screen overlay for diagnostics
-    const debugEl = document.createElement('div');
-    debugEl.style.cssText = 'position:fixed;top:0;right:0;z-index:9999;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:6px 10px;pointer-events:none;white-space:pre';
-    document.body.appendChild(debugEl);
-    this.debugOverlay = debugEl;
-
+    // Intercept instructions to gather debug stats (always counted, only displayed when debug is on)
+    this.debugStats = { imgCount: 0, blobCount: 0, endCount: 0, syncCount: 0, blobBytes: 0, sizeInfo: '', lastImgInfo: '' };
     const clientHandler = this.tunnel.oninstruction;
-    let imgCount = 0, blobCount = 0, endCount = 0, syncCount = 0, blobBytes = 0;
-    let sizeInfo = '', lastImgInfo = '';
-
-    const updateDebug = () => {
-      const d = this.client?.getDisplay();
-      const dw = d?.getWidth() ?? 0, dh = d?.getHeight() ?? 0;
-      const el = d?.getElement();
-      const canvases = el?.querySelectorAll('canvas') ?? [];
-      let pixelInfo = '';
-      if (canvases.length > 0) {
-        const c = canvases[0] as HTMLCanvasElement;
-        const ctx = c.getContext('2d');
-        if (ctx && c.width > 0 && c.height > 0) {
-          const p = ctx.getImageData(c.width / 2, c.height / 2, 1, 1).data;
-          pixelInfo = `px(mid): ${p[0]},${p[1]},${p[2]},${p[3]}`;
-        }
-      }
-      debugEl.textContent = [
-        `img:${imgCount} blob:${blobCount} end:${endCount} sync:${syncCount}`,
-        `blobKB:${Math.round(blobBytes / 1024)} display:${dw}x${dh} canv:${canvases.length}`,
-        sizeInfo,
-        pixelInfo,
-        lastImgInfo,
-      ].filter(Boolean).join('\n');
-    };
-
     this.tunnel.oninstruction = (opcode: string, args: string[]) => {
       if (opcode === 'img') {
-        imgCount++;
-        lastImgInfo = `img#${imgCount} s=${args[0]} L=${args[2]} ${args[3]} ${args[4]},${args[5]}`;
+        this.debugStats.imgCount++;
+        this.debugStats.lastImgInfo = `img#${this.debugStats.imgCount} s=${args[0]} L=${args[2]} ${args[3]} ${args[4]},${args[5]}`;
       } else if (opcode === 'blob') {
-        blobCount++;
-        blobBytes += (args[1]?.length ?? 0);
+        this.debugStats.blobCount++;
+        this.debugStats.blobBytes += (args[1]?.length ?? 0);
       } else if (opcode === 'end') {
-        endCount++;
+        this.debugStats.endCount++;
       } else if (opcode === 'size') {
-        sizeInfo = `size: L${args[0]} ${args[1]}x${args[2]}`;
+        this.debugStats.sizeInfo = `size: L${args[0]} ${args[1]}x${args[2]}`;
       } else if (opcode === 'sync') {
-        syncCount++;
-        updateDebug();
+        this.debugStats.syncCount++;
+        this.updateDebugOverlay();
       }
       clientHandler?.call(this.tunnel, opcode, args);
     };
@@ -288,21 +260,58 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/virtual-machines']);
   }
 
+  toggleDebug(): void {
+    const on = !this.debugMode();
+    this.debugMode.set(on);
+    if (on) {
+      const el = document.createElement('div');
+      el.style.cssText = 'position:fixed;top:0;right:0;z-index:9999;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:6px 10px;pointer-events:none;white-space:pre';
+      document.body.appendChild(el);
+      this.debugOverlay = el;
+      this.updateDebugOverlay();
+    } else {
+      this.debugOverlay?.remove();
+      this.debugOverlay = null;
+    }
+  }
+
+  private updateDebugOverlay(): void {
+    if (!this.debugOverlay) return;
+    const s = this.debugStats;
+    const d = this.client?.getDisplay();
+    const dw = d?.getWidth() ?? 0, dh = d?.getHeight() ?? 0;
+    const el = d?.getElement();
+    const canvases = el?.querySelectorAll('canvas') ?? [];
+    let pixelInfo = '';
+    if (canvases.length > 0) {
+      const c = canvases[0] as HTMLCanvasElement;
+      const ctx = c.getContext('2d');
+      if (ctx && c.width > 0 && c.height > 0) {
+        const p = ctx.getImageData(c.width / 2, c.height / 2, 1, 1).data;
+        pixelInfo = `px(mid): ${p[0]},${p[1]},${p[2]},${p[3]}`;
+      }
+    }
+    this.debugOverlay.textContent = [
+      `img:${s.imgCount} blob:${s.blobCount} end:${s.endCount} sync:${s.syncCount}`,
+      `blobKB:${Math.round(s.blobBytes / 1024)} display:${dw}x${dh} canv:${canvases.length}`,
+      s.sizeInfo,
+      pixelInfo,
+      s.lastImgInfo,
+      `keys: dn=${this.keyDownCount} up=${this.keyUpCount} raw=${this.rawKeyCount}`,
+    ].filter(Boolean).join('\n');
+  }
+
   private setupInput(): void {
     if (!this.client) return;
 
     const display = this.client.getDisplay();
     const displayElement = display.getElement();
 
-    // Raw DOM keyboard listener — diagnostic to verify browser events fire
+    // Raw DOM keyboard listener for debug diagnostics
     this.rawKeyCount = 0;
     this.rawKeyDebugHandler = (e: KeyboardEvent) => {
       this.rawKeyCount++;
-      if (this.debugOverlay) {
-        this.debugOverlay.textContent =
-          (this.debugOverlay.textContent ?? '').replace(/\nraw:.*/, '') +
-          `\nraw: ${this.rawKeyCount} key="${e.key}" code=${e.code}`;
-      }
+      this.updateDebugOverlay();
     };
     document.addEventListener('keydown', this.rawKeyDebugHandler, true);
 
@@ -315,11 +324,7 @@ export class VmConsoleComponent implements OnInit, AfterViewInit, OnDestroy {
       // CRITICAL: must pass 1/0 integers, NOT true/false booleans.
       // guacd parses with atoi() — atoi("true") = 0, so booleans break keyboard.
       this.client?.sendKeyEvent(1 as any, keysym);
-      if (this.debugOverlay) {
-        this.debugOverlay.textContent =
-          (this.debugOverlay.textContent ?? '').replace(/\nkeys:.*/, '') +
-          `\nkeys: dn=${this.keyDownCount} up=${this.keyUpCount} last=0x${keysym.toString(16)}`;
-      }
+      this.updateDebugOverlay();
       return false; // Prevent default browser behavior
     };
     this.keyboard.onkeyup = (keysym: number) => {
