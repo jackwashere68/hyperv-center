@@ -1,0 +1,17 @@
+name: Deploy to G3
+
+on:
+  push:
+    branches: [feature/vm-hardware-details]
+
+jobs:
+  trigger-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger g3-ops deploy
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.G3_OPS_TOKEN }}
+          repository: jackwashere68/g3-ops
+          event-type: deploy
+          client-payload: '{"app_name": "hyperv-center-v1", "repository": "${{ github.repository }}"}'
